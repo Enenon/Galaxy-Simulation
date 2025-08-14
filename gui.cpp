@@ -1,4 +1,5 @@
 #include<Windows.h>
+#include <random>
 #include <GLFW/glfw3.h>
 #include <gl/GLU.h>
 #include <iostream>
@@ -14,6 +15,8 @@ int main(void)
 {
     const int largura = 1600;
     const int altura = 900;
+
+    inicializarCorpos();
 
     /* Initialize the library */
     glfwInit();
@@ -47,10 +50,10 @@ int main(void)
         desenhag();
 
         num++;
-        if (num >= 4000) {
+        if (num >= 40000) {
             num = 0;
         }
-        //std::cout << num << std::endl;
+        //std::cout << rand()/double(RAND_MAX) << std::endl;
         
         // aqui eu boto pra o programa fechar no Esc
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {

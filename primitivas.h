@@ -6,7 +6,9 @@ struct vec3 {
     vec3(float x_, float y_, float z_) : x(x_), y(y_), z(z_){}
 };
 
-
+float rng() {
+    return rand() / double(RAND_MAX);
+}
 
 void redimensiona(int largura, int altura) {
     glViewport(0, 0, largura, altura);
@@ -97,17 +99,34 @@ float Fgravitacional(float m2, vec3 p1, vec3 p2) {
 vec3 velocidade(float F, vec3 v1, vec3 p1, vec3 p2) {
     float dx, dy, dz; dx = p1.x - p2.x; dy = p1.y - p2.y; dz = p1.z - p2.z;
     vec3 d(dx, dy, dz);
-    float r = sqrt(dx*dx+dy*dy+dz*dz);
+    float r = sqrt(dx * dx + dy * dy + dz * dz);
     vec3 a(F * dx / r, F * dy / r, F * dz / r);
     vec3 v(v1.x + a.x, v1.y + a.y, v1.z + a.z);
     return v;
 
 }
-const int n = 2;
-double corpos[n][7] = {
-    {1,1,1,-10,-0.001,0.001,0},
-    {0.7,-2,1,-10,0.002,-0.003,0}
-};
+
+// orden: massa, x, y, z, vx,vy, vz
+const int n = 60;
+double corpos[n][7];
+
+void inicializarCorpos() {
+    float espacamento_x = 200;
+    float espacamento_y = 150;
+    for (int i = 0; i < n; i++) {
+        // Atribuição correta, elemento por elemento
+        corpos[i][0] = 1.0;
+        corpos[i][1] = rng() * espacamento_x - espacamento_x/2;
+        corpos[i][2] = rng() * espacamento_y - espacamento_y/2;
+        corpos[i][3] = -200;
+        corpos[i][4] = (rng() - 0.5) * 0.003;
+        corpos[i][5] = (rng() - 0.5) * 0.003;
+        corpos[i][6] = 0.0;
+    }
+}
+// inicializarCorpos() é executado na main, porque a primitivas.h não pode realizar nenhum laço ou algo do tipo
+
+
 // massa, (x,y,z),(vx,vy,vz)
 //vec3 p1(1, 1, -10); vec3 v1(-0.001, 0.001, 0);
 //vec3 p2(-1, -1, -10); vec3 v2(0.002, 0, 0);
@@ -138,7 +157,7 @@ void desenhag() {
                 corpos[i][4] = v1.x; corpos[i][5] = v1.y; corpos[i][6] = v1.z;
                 //corpos[j][1] = p2.x; corpos[j][2] = p2.y; corpos[j][3] = p2.z;
                 glLoadIdentity();
-                desenhaPonto(10, vec3(corpos[i][1], corpos[i][2], corpos[i][3]), azul);
+                desenhaPonto(10, vec3(corpos[i][1], corpos[i][2], corpos[i][3]), brancot);
                 //std::cout << p1.x << " " << p2.x << std::endl;
                 
         }}
@@ -146,7 +165,8 @@ void desenhag() {
             momento[k] = momento[k] + corpos[i][0] * corpos[i][k + 4];
         }
     }
-    std::cout << momento[0] << " " << momento[1] << " " << momento[2] << std::endl;
+    std::cout << corpos[0][1] << " " << corpos[1][1] << std::endl;
+    //std::cout << momento[0] << " " << momento[1] << " " << momento[2] << std::endl;
     //desenhaPonto(10, vec3(corpos[i][1], corpos[i][2], corpos[i][3]), azul);
     //desenhaPonto(10, vec3(corpos[j][1], corpos[j][2], corpos[j][3]), verde);
     //std::cout << p1.x << " " << p2.x << std::endl;
@@ -155,8 +175,13 @@ void desenhag() {
 
 /// Fim do teste
 
-
 void desenha(float num) {
+    glLoadIdentity();
+    desenhaPonto(10, vec3(num * 0.001, 0, -10.0),azul);
+    std::cout << num * 0.001 << std::endl;
+}
+
+void desenhaOld(float num) {
     glLoadIdentity();
 
     glPushMatrix();

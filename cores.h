@@ -1,6 +1,7 @@
 #pragma once
 
 typedef float color[3];
+typedef float colora[4];
 
 color azul = { 0.52, 0.75, 0.91 };
 color vermelho = { 0.945, 0.58, 0.541 };
@@ -12,3 +13,5 @@ color orchid = { 0.855, 0.439, 0.839 };
 color blueviolet = { 0.541, 0.169, 0.886 };
 color darkorchid = { 0.6, 0.196, 0.8 };
 color slateblue = { 0.416, 0.353, 0.804 };
+
+colora brancot = { 1, 1, 1, 0.1 };
