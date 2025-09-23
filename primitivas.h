@@ -84,7 +84,7 @@ void desenhaCubo(float tamanho) {
 void desenhaPonto(float r,vec3 p,color cor) {
     glColor3fv(cor);
     glPointSize(r);
-    glEnable(GL_POINT_SMOOTH);
+    //glEnable(GL_POINT_SMOOTH);
     glBegin(GL_POINTS);
         glVertex3fv(&p.x);
     glEnd();
@@ -93,7 +93,7 @@ void desenhaPonto(float r,vec3 p,color cor) {
 float Fgravitacional(float m2, vec3 p1, vec3 p2) {
     float r2 = pow(p1.x - p2.x,2) + pow(p1.y - p2.y,2) + pow(p1.z - p2.z,2);
     float G = 0.00005;
-    float F = -G * m2 / r2;
+    float F = -G * m2 / (r2 + 10.0);
     return F;
 }
 vec3 velocidade(float F, vec3 v1, vec3 p1, vec3 p2) {
@@ -107,21 +107,25 @@ vec3 velocidade(float F, vec3 v1, vec3 p1, vec3 p2) {
 }
 
 // orden: massa, x, y, z, vx,vy, vz
-const int n = 60;
-double corpos[n][7];
+const int n = 200;
+double corpos[n][8];
 
 void inicializarCorpos() {
     float espacamento_x = 200;
     float espacamento_y = 150;
+    float espacamento = 50;
     for (int i = 0; i < n; i++) {
+        float raiocorpo = rng() * espacamento;
+        float angulocorpo = rng() * 2 * M_PI;
         // Atribuição correta, elemento por elemento
         corpos[i][0] = 1.0;
-        corpos[i][1] = rng() * espacamento_x - espacamento_x/2;
-        corpos[i][2] = rng() * espacamento_y - espacamento_y/2;
-        corpos[i][3] = -200;
-        corpos[i][4] = (rng() - 0.5) * 0.003;
-        corpos[i][5] = (rng() - 0.5) * 0.003;
-        corpos[i][6] = 0.0;
+        corpos[i][1] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
+        corpos[i][2] = raiocorpo * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
+        corpos[i][3] = -200 + rng();
+        corpos[i][4] = -sin(angulocorpo) * 0.0007;
+        corpos[i][5] = cos(angulocorpo) * 0.0007; //(rng() - 0.5)
+        corpos[i][6] = 0;
+        corpos[i][7] = 0;
     }
 }
 // inicializarCorpos() é executado na main, porque a primitivas.h não pode realizar nenhum laço ou algo do tipo
@@ -139,15 +143,18 @@ void desenhag() {
     for (int i = 0;i < n;i++) { // i é o que sofre a força
         vec3 p1(corpos[i][1], corpos[i][2], corpos[i][3]); vec3 v1(corpos[i][4], corpos[i][5], corpos[i][6]);
         for (int j = 0; j < n; j++) {
-            if (i != j) {
+            if (i != j && corpos[i][7] == 0 && corpos[j][7] == 0) {
 
                 /// próxima tarefa: fazer as posições só se alterarem depois de todas as iterações acontecerem ///
-
-
 
                 vec3 p2(corpos[j][1], corpos[j][2], corpos[j][3]);
                 vec3 v2(corpos[j][4], corpos[j][5], corpos[j][6]);
                 float F = Fgravitacional(corpos[j][0], p1, p2);
+                if (abs(F) > 5e-4) {
+                    //std::cout << j << " " << F << std::endl;
+                   // corpos[j][7] = 1;
+                   // F = 0;
+                }
                 v1 = velocidade(F, v1, p1, p2);
                 //v2 = velocidade(-F, m2, v2, p2, p1);
                 // atualizar posições
@@ -157,20 +164,20 @@ void desenhag() {
                 corpos[i][4] = v1.x; corpos[i][5] = v1.y; corpos[i][6] = v1.z;
                 //corpos[j][1] = p2.x; corpos[j][2] = p2.y; corpos[j][3] = p2.z;
                 glLoadIdentity();
-                desenhaPonto(10, vec3(corpos[i][1], corpos[i][2], corpos[i][3]), brancot);
-                //std::cout << p1.x << " " << p2.x << std::endl;
+                desenhaPonto(1, vec3(corpos[i][1], corpos[i][2], corpos[i][3]), brancot);
                 
         }}
         for (int k = 0; k < 3; k++) {
             momento[k] = momento[k] + corpos[i][0] * corpos[i][k + 4];
         }
     }
-    std::cout << corpos[0][1] << " " << corpos[1][1] << std::endl;
+    //std::cout << corpos[0][1] << " " << corpos[1][1] << std::endl;
+
     //std::cout << momento[0] << " " << momento[1] << " " << momento[2] << std::endl;
     //desenhaPonto(10, vec3(corpos[i][1], corpos[i][2], corpos[i][3]), azul);
     //desenhaPonto(10, vec3(corpos[j][1], corpos[j][2], corpos[j][3]), verde);
     //std::cout << p1.x << " " << p2.x << std::endl;
-    for (int cont = 0; cont < 20000000; cont++){}
+    //for (int cont = 0; cont < 200000000; cont++){}
 }
 
 /// Fim do teste
