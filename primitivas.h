@@ -1,4 +1,5 @@
 #define M_PI 3.1415926535897932384626433832795
+const float dt = 15;
 
 struct vec3 {
     float x, y, z;
@@ -89,11 +90,10 @@ void desenhaPonto(float r,vec3 p,color cor) {
         glVertex3fv(&p.x);
     glEnd();
 }
-
+const float G = 0.00005;
 float Fgravitacional(float m2, vec3 p1, vec3 p2) {
     float r2 = pow(p1.x - p2.x,2) + pow(p1.y - p2.y,2) + pow(p1.z - p2.z,2);
-    float G = 0.00005;
-    float F = -G * m2 / (r2 + 10.0);
+    float F = -G * m2 / (r2 + 5.0);
     return F;
 }
 vec3 velocidade(float F, vec3 v1, vec3 p1, vec3 p2) {
@@ -101,31 +101,44 @@ vec3 velocidade(float F, vec3 v1, vec3 p1, vec3 p2) {
     vec3 d(dx, dy, dz);
     float r = sqrt(dx * dx + dy * dy + dz * dz);
     vec3 a(F * dx / r, F * dy / r, F * dz / r);
-    vec3 v(v1.x + a.x, v1.y + a.y, v1.z + a.z);
+    vec3 v(v1.x + a.x*dt, v1.y + a.y*dt, v1.z + a.z*dt);
     return v;
 
 }
+vec3 aceleracao(float F, vec3 p1, vec3 p2) {
+    float dx, dy, dz; dx = p1.x - p2.x; dy = p1.y - p2.y; dz = p1.z - p2.z;
+    vec3 d(dx, dy, dz);
+    float r = sqrt(dx * dx + dy * dy + dz * dz);
+    vec3 a(F * dx / r, F * dy / r, F * dz / r);
+    return a;
 
-// orden: massa, x, y, z, vx,vy, vz
-const int n = 200;
-double corpos[n][8];
+}
+
+
+
+// orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
+const int n = 500;
+const float massa = 1.0;
+double corpos[n][11];
 
 void inicializarCorpos() {
     float espacamento_x = 200;
     float espacamento_y = 150;
     float espacamento = 50;
+    float magnitudev = 1;
     for (int i = 0; i < n; i++) {
         float raiocorpo = rng() * espacamento;
         float angulocorpo = rng() * 2 * M_PI;
         // Atribuição correta, elemento por elemento
-        corpos[i][0] = 1.0;
+        corpos[i][0] = massa;
         corpos[i][1] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
         corpos[i][2] = raiocorpo * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
-        corpos[i][3] = -200 + rng();
-        corpos[i][4] = -sin(angulocorpo) * 0.0007;
-        corpos[i][5] = cos(angulocorpo) * 0.0007; //(rng() - 0.5)
+        corpos[i][3] = -200 + rng()*0.01;
+        corpos[i][4] = -sin(angulocorpo) * sqrt(G * massa * n * raiocorpo / espacamento) * magnitudev;
+        corpos[i][5] = cos(angulocorpo) * sqrt(G * massa * n * raiocorpo / espacamento) * magnitudev; //(rng() - 0.5)
         corpos[i][6] = 0;
-        corpos[i][7] = 0;
+        corpos[i][7] = 0; corpos[i][8] = 0; corpos[i][9] = 0;
+        corpos[i][10] = 0;
     }
 }
 // inicializarCorpos() é executado na main, porque a primitivas.h não pode realizar nenhum laço ou algo do tipo
@@ -142,8 +155,9 @@ void desenhag() {
     float momento[3] = { 0,0,0 };
     for (int i = 0;i < n;i++) { // i é o que sofre a força
         vec3 p1(corpos[i][1], corpos[i][2], corpos[i][3]); vec3 v1(corpos[i][4], corpos[i][5], corpos[i][6]);
+        vec3 a1(0, 0, 0);
         for (int j = 0; j < n; j++) {
-            if (i != j && corpos[i][7] == 0 && corpos[j][7] == 0) {
+            if (i != j && corpos[i][10] == 0 && corpos[j][10] == 0) {
 
                 /// próxima tarefa: fazer as posições só se alterarem depois de todas as iterações acontecerem ///
 
@@ -152,25 +166,33 @@ void desenhag() {
                 float F = Fgravitacional(corpos[j][0], p1, p2);
                 if (abs(F) > 5e-4) {
                     //std::cout << j << " " << F << std::endl;
-                   // corpos[j][7] = 1;
+                   // corpos[j][10] = 1;
                    // F = 0;
                 }
+                //a1 = aceleracao(F, p1, p2); // cálculos mostraram que implementar direto na velocidade dá no mesmo q na aceleração
                 v1 = velocidade(F, v1, p1, p2);
                 //v2 = velocidade(-F, m2, v2, p2, p1);
                 // atualizar posições
-                p1.x = p1.x + v1.x; p1.y = p1.y + v1.y; p1.z = p1.z + v1.z;
-                //p2.x = p2.x + v2.x; p2.y = p2.y + v2.y; p2.z = p2.z + v2.z;
-                corpos[i][1] = p1.x; corpos[i][2] = p1.y; corpos[i][3] = p1.z;
+                //p1.x = p1.x + v1.x*dt; p1.y = p1.y + v1.y*dt; p1.z = p1.z + v1.z*dt;
+
+                //corpos[i][1] = p1.x; corpos[i][2] = p1.y; corpos[i][3] = p1.z; <----- agora é feito um loop só para atualizar a posição dos corpos
                 corpos[i][4] = v1.x; corpos[i][5] = v1.y; corpos[i][6] = v1.z;
                 //corpos[j][1] = p2.x; corpos[j][2] = p2.y; corpos[j][3] = p2.z;
-                glLoadIdentity();
-                desenhaPonto(1, vec3(corpos[i][1], corpos[i][2], corpos[i][3]), brancot);
+                
                 
         }}
+        glLoadIdentity();
+        desenhaPonto(1, vec3(corpos[i][1], corpos[i][2], corpos[i][3]), brancot);
         for (int k = 0; k < 3; k++) {
             momento[k] = momento[k] + corpos[i][0] * corpos[i][k + 4];
         }
     }
+    for (int i = 0; i < n; i++) {
+        vec3 p1(corpos[i][1], corpos[i][2], corpos[i][3]); vec3 v1(corpos[i][4], corpos[i][5], corpos[i][6]);
+        p1.x = p1.x + v1.x*dt; p1.y = p1.y + v1.y*dt; p1.z = p1.z + v1.z*dt;
+        corpos[i][1] = p1.x; corpos[i][2] = p1.y; corpos[i][3] = p1.z;
+    }
+
     //std::cout << corpos[0][1] << " " << corpos[1][1] << std::endl;
 
     //std::cout << momento[0] << " " << momento[1] << " " << momento[2] << std::endl;
