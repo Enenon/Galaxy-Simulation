@@ -91,9 +91,10 @@ void desenhaPonto(float r,vec3 p,color cor) {
     glEnd();
 }
 const float G = 0.00005;
+const float r_soft = 0.2;
 float Fgravitacional(float m2, vec3 p1, vec3 p2) {
     float r2 = pow(p1.x - p2.x,2) + pow(p1.y - p2.y,2) + pow(p1.z - p2.z,2);
-    float F = -G * m2 / (r2 + 5.0);
+    float F = -G * m2 / (r2 + r_soft);
     return F;
 }
 vec3 velocidade(float F, vec3 v1, vec3 p1, vec3 p2) {
@@ -117,14 +118,14 @@ vec3 aceleracao(float F, vec3 p1, vec3 p2) {
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-const int n = 500;
+const int n = 1000;
 const float massa = 1.0;
 double corpos[n][11];
 
 void inicializarCorpos() {
     float espacamento_x = 200;
     float espacamento_y = 150;
-    float espacamento = 50;
+    float espacamento = 100;
     float magnitudev = 1;
     for (int i = 0; i < n; i++) {
         float raiocorpo = rng() * espacamento;
@@ -134,8 +135,8 @@ void inicializarCorpos() {
         corpos[i][1] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
         corpos[i][2] = raiocorpo * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
         corpos[i][3] = -200 + rng()*0.01;
-        corpos[i][4] = -sin(angulocorpo) * sqrt(G * massa * n * raiocorpo / espacamento) * magnitudev;
-        corpos[i][5] = cos(angulocorpo) * sqrt(G * massa * n * raiocorpo / espacamento) * magnitudev; //(rng() - 0.5)
+        corpos[i][4] = -sin(angulocorpo) * sqrt(G * massa * n * raiocorpo / pow(espacamento,2)) * magnitudev;
+        corpos[i][5] = cos(angulocorpo) * sqrt(G * massa * n * raiocorpo / pow(espacamento,2)) * magnitudev; //(rng() - 0.5)
         corpos[i][6] = 0;
         corpos[i][7] = 0; corpos[i][8] = 0; corpos[i][9] = 0;
         corpos[i][10] = 0;
@@ -153,9 +154,11 @@ void desenhag() {
     float m1, m2;
     m1 = 1; m2 = 0.7;
     float momento[3] = { 0,0,0 };
+    #pragma omp parallel for reduction(+:p1)
     for (int i = 0;i < n;i++) { // i é o que sofre a força
         vec3 p1(corpos[i][1], corpos[i][2], corpos[i][3]); vec3 v1(corpos[i][4], corpos[i][5], corpos[i][6]);
         vec3 a1(0, 0, 0);
+        #pragma omp parallel for reduction(+:v1,v2,p2)
         for (int j = 0; j < n; j++) {
             if (i != j && corpos[i][10] == 0 && corpos[j][10] == 0) {
 
@@ -182,10 +185,10 @@ void desenhag() {
                 
         }}
         glLoadIdentity();
-        desenhaPonto(1, vec3(corpos[i][1], corpos[i][2], corpos[i][3]), brancot);
-        for (int k = 0; k < 3; k++) {
-            momento[k] = momento[k] + corpos[i][0] * corpos[i][k + 4];
-        }
+        desenhaPonto(2, vec3(corpos[i][1], corpos[i][2], corpos[i][3]), brancot);
+        //for (int k = 0; k < 3; k++) {
+        //    momento[k] = momento[k] + corpos[i][0] * corpos[i][k + 4];
+        //}
     }
     for (int i = 0; i < n; i++) {
         vec3 p1(corpos[i][1], corpos[i][2], corpos[i][3]); vec3 v1(corpos[i][4], corpos[i][5], corpos[i][6]);

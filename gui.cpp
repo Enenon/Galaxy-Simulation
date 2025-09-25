@@ -5,6 +5,7 @@
 #include <iostream>
 #include "cores.h"
 #include "primitivas.h"
+#include <omp.h> // paralelismo
 
 
 float num = 0.0;
