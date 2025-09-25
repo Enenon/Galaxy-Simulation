@@ -1,7 +1,15 @@
-#include<Windows.h>
+#include "platform_compat.h"
 #include <random>
 #include <GLFW/glfw3.h>
-#include <gl/GLU.h>
+
+#ifdef _WIN32
+  #include <gl/GL.h>
+  #include <gl/GLU.h>
+#else
+  #include <GL/gl.h>
+  #include <GL/glu.h>
+#endif
+
 #include <iostream>
 #include "cores.h"
 #include "primitivas.h"
