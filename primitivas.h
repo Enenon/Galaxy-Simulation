@@ -1,4 +1,13 @@
 #define M_PI 3.1415926535897932384626433832795
+
+// unidades de medida
+const float seg = 1.0f; const float dia = 86400 * seg; const double ano = 365 * dia; const double milenio = 1000 * ano;
+const double UA = 1.0; const float metro = UA / 1.496e11; const float newton = 1.0; const double mSol = 1.0;
+const float kg = mSol / 1.89e30;
+const float G = 0.00005;
+//const float G = 6.67e-11 * newton * metro * metro / kg;
+const float r_soft = 0.2;
+
 const float dt = 15;
 
 struct vec3 {
@@ -82,16 +91,15 @@ void desenhaCubo(float tamanho) {
 /// Isso é só pra teste
 
 
-void desenhaPonto(float r,vec3 p,color cor) {
-    glColor3fv(cor);
+void desenhaPonto(float r,vec3 p,colora cor) {
+    glColor4fv(cor);
     glPointSize(r);
-    //glEnable(GL_POINT_SMOOTH);
+    glEnable(GL_POINT_SMOOTH);
     glBegin(GL_POINTS);
         glVertex3fv(&p.x);
     glEnd();
 }
-const float G = 0.00005;
-const float r_soft = 0.2;
+
 float Fgravitacional(float m2, vec3 p1, vec3 p2) {
     float r2 = pow(p1.x - p2.x,2) + pow(p1.y - p2.y,2) + pow(p1.z - p2.z,2);
     float F = -G * m2 / (r2 + r_soft);
@@ -118,10 +126,10 @@ vec3 aceleracao(float F, vec3 p1, vec3 p2) {
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-const int n = 1000;
+const int n = 800;
 const float massa = 1.0;
 double corpos[n][11];
-
+float cores_corpos[n][3];
 void inicializarCorpos() {
     float espacamento_x = 200;
     float espacamento_y = 150;
@@ -140,6 +148,8 @@ void inicializarCorpos() {
         corpos[i][6] = 0;
         corpos[i][7] = 0; corpos[i][8] = 0; corpos[i][9] = 0;
         corpos[i][10] = 0;
+
+        cores_corpos[i][0] = 0.5 + rng() / 2; cores_corpos[i][1] = 0.5 + rng() / 2;  cores_corpos[i][2] = 0.5 + rng() / 2;
     }
 }
 // inicializarCorpos() é executado na main, porque a primitivas.h não pode realizar nenhum laço ou algo do tipo
@@ -185,7 +195,7 @@ void desenhag() {
                 
         }}
         glLoadIdentity();
-        desenhaPonto(2, vec3(corpos[i][1], corpos[i][2], corpos[i][3]), brancot);
+        desenhaPonto(1.3, vec3(corpos[i][1], corpos[i][2], corpos[i][3]), cores_corpos[i]);
         //for (int k = 0; k < 3; k++) {
         //    momento[k] = momento[k] + corpos[i][0] * corpos[i][k + 4];
         //}

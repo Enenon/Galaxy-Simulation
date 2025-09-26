@@ -14,8 +14,8 @@ float num = 0.0;
 
 int main(void)
 {
-    const int largura = 1600;
-    const int altura = 900;
+    const int largura = 1920;
+    const int altura = 1080;
 
     inicializarCorpos();
 
@@ -37,6 +37,8 @@ int main(void)
     glClearColor(0.1, 0.1, 0.1, 1.0); // cor do fundo
 
     glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // <---- ative essa linha se quiser habilitar transparência
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
