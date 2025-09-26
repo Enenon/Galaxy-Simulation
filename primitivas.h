@@ -1,14 +1,15 @@
 #define M_PI 3.1415926535897932384626433832795
 
 // unidades de medida
-const float seg = 1.0f; const float dia = 86400 * seg; const double ano = 365 * dia; const double milenio = 1000 * ano;
-const double UA = 1.0; const float metro = UA / 1.496e11; const float newton = 1.0; const double mSol = 1.0;
+const double milenio = 1;
+const double AL = 1.0; const float UA = 0.0000158125 * AL;  const float metro = UA / 1.496e11; const float newton = 1.0; const double mSol = 1.0;
 const float kg = mSol / 1.89e30;
-const float G = 0.00005;
+//const float G = 0.00005;
 //const float G = 6.67e-11 * newton * metro * metro / kg;
-const float r_soft = 0.2;
+const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
+const float r_soft = 1e7*AL;
 
-const float dt = 15;
+const float dt = 5e10*milenio;
 
 struct vec3 {
     float x, y, z;
@@ -127,13 +128,13 @@ vec3 aceleracao(float F, vec3 p1, vec3 p2) {
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
 const int n = 800;
-const float massa = 1.0;
+const float massa = 1.0*mSol;
 double corpos[n][11];
 float cores_corpos[n][3];
+float espacamento = 110e3*AL;
 void inicializarCorpos() {
     float espacamento_x = 200;
     float espacamento_y = 150;
-    float espacamento = 100;
     float magnitudev = 1;
     for (int i = 0; i < n; i++) {
         float raiocorpo = rng() * espacamento;
@@ -195,7 +196,7 @@ void desenhag() {
                 
         }}
         glLoadIdentity();
-        desenhaPonto(1.3, vec3(corpos[i][1], corpos[i][2], corpos[i][3]), cores_corpos[i]);
+        desenhaPonto(1.3, vec3(corpos[i][1]*100/espacamento, corpos[i][2]*100/espacamento, corpos[i][3]), cores_corpos[i]);
         //for (int k = 0; k < 3; k++) {
         //    momento[k] = momento[k] + corpos[i][0] * corpos[i][k + 4];
         //}
