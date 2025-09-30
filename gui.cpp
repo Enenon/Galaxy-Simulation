@@ -34,7 +34,7 @@ int main(void)
     glfwMakeContextCurrent(window);
 
 
-    glClearColor(0.1, 0.1, 0.1, 1.0); // cor do fundo
+    glClearColor(0.02, 0.02, 0.02, 1.0); // cor do fundo
 
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_BLEND);

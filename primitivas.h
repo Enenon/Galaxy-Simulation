@@ -7,9 +7,9 @@ const float kg = mSol / 1.89e30;
 //const float G = 0.00005;
 //const float G = 6.67e-11 * newton * metro * metro / kg;
 const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
-const float r_soft = 1e7*AL;
+const float r_soft = 1e9*AL;
 
-const float dt = 5e10*milenio;
+const float dt = 8e6*milenio;
 
 struct vec3 {
     float x, y, z;
@@ -108,7 +108,7 @@ float Fgravitacional(float m2, vec3 p1, vec3 p2) {
 }
 vec3 velocidade(float F, vec3 v1, vec3 p1, vec3 p2) {
     float dx, dy, dz; dx = p1.x - p2.x; dy = p1.y - p2.y; dz = p1.z - p2.z;
-    vec3 d(dx, dy, dz);
+    //vec3 d(dx, dy, dz);
     float r = sqrt(dx * dx + dy * dy + dz * dz);
     vec3 a(F * dx / r, F * dy / r, F * dz / r);
     vec3 v(v1.x + a.x*dt, v1.y + a.y*dt, v1.z + a.z*dt);
@@ -117,7 +117,7 @@ vec3 velocidade(float F, vec3 v1, vec3 p1, vec3 p2) {
 }
 vec3 aceleracao(float F, vec3 p1, vec3 p2) {
     float dx, dy, dz; dx = p1.x - p2.x; dy = p1.y - p2.y; dz = p1.z - p2.z;
-    vec3 d(dx, dy, dz);
+    //vec3 d(dx, dy, dz);
     float r = sqrt(dx * dx + dy * dy + dz * dz);
     vec3 a(F * dx / r, F * dy / r, F * dz / r);
     return a;
@@ -127,8 +127,8 @@ vec3 aceleracao(float F, vec3 p1, vec3 p2) {
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-const int n = 10;
-const float massa = 1.0*mSol;
+const int n = 500;
+const float massa = 1e12/n*mSol;
 double corpos[n][11];
 float cores_corpos[n][3];
 float espacamento = 110e3*AL;
@@ -150,7 +150,7 @@ void inicializarCorpos() {
         corpos[i][7] = 0; corpos[i][8] = 0; corpos[i][9] = 0;
         corpos[i][10] = 0;
 
-        cores_corpos[i][0] = 0.5 + rng() / 2; cores_corpos[i][1] = 0.5 + rng() / 2;  cores_corpos[i][2] = 0.5 + rng() / 2;
+        cores_corpos[i][0] = 0.8 + cos(4*angulocorpo) / 2.5; cores_corpos[i][1] = 0.8 + sin(4*angulocorpo) / 2.5;  cores_corpos[i][2] = 0.8;
     }
 }
 // inicializarCorpos() é executado na main, porque a primitivas.h não pode realizar nenhum laço ou algo do tipo
@@ -162,35 +162,30 @@ void inicializarCorpos() {
 
 
 void desenhag() {
+	using namespace std;
     float m1, m2;
     m1 = 1; m2 = 0.7;
     float momento[3] = { 0,0,0 };
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (int i = 0;i < n;i++) { // i é o que sofre a força
         vec3 p1(corpos[i][1], corpos[i][2], corpos[i][3]); vec3 v1(corpos[i][4], corpos[i][5], corpos[i][6]);
         vec3 a1(0, 0, 0);
-        #pragma omp parallel for
+		corpos[i][7] = 0; corpos[i][8] = 0; corpos[i][9] = 0;
+        //#pragma omp parallel for
         for (int j = 0; j < n; j++) {
             if (i != j && corpos[i][10] == 0 && corpos[j][10] == 0) {
 
-                /// próxima tarefa: fazer as posições só se alterarem depois de todas as iterações acontecerem ///
-
                 vec3 p2(corpos[j][1], corpos[j][2], corpos[j][3]);
                 vec3 v2(corpos[j][4], corpos[j][5], corpos[j][6]);
-                float F = Fgravitacional(corpos[j][0], p1, p2);
-                if (abs(F) > 5e-4) {
-                    //std::cout << j << " " << F << std::endl;
-                   // corpos[j][10] = 1;
-                   // F = 0;
-                }
-                //a1 = aceleracao(F, p1, p2); // cálculos mostraram que implementar direto na velocidade dá no mesmo q na aceleração
-                v1 = velocidade(F, v1, p1, p2);
+                float a = Fgravitacional(corpos[j][0], p1, p2);
+                a1 = aceleracao(a, p1, p2); // cálculos mostraram que implementar direto na velocidade dá no mesmo q na aceleração
+				corpos[i][7] = corpos[i][7] + a1.x; corpos[i][8] = corpos[i][8] + a1.y; corpos[i][9] = corpos[i][9] + a1.z;
+                //v1 = velocidade(F, v1, p1, p2);
                 //v2 = velocidade(-F, m2, v2, p2, p1);
                 // atualizar posições
                 //p1.x = p1.x + v1.x*dt; p1.y = p1.y + v1.y*dt; p1.z = p1.z + v1.z*dt;
-
                 //corpos[i][1] = p1.x; corpos[i][2] = p1.y; corpos[i][3] = p1.z; <----- agora é feito um loop só para atualizar a posição dos corpos
-                corpos[i][4] = v1.x; corpos[i][5] = v1.y; corpos[i][6] = v1.z;
+                //corpos[i][4] = v1.x; corpos[i][5] = v1.y; corpos[i][6] = v1.z;
                 //corpos[j][1] = p2.x; corpos[j][2] = p2.y; corpos[j][3] = p2.z;
                 
                 
@@ -203,8 +198,11 @@ void desenhag() {
     }
     for (int i = 0; i < n; i++) {
         vec3 p1(corpos[i][1], corpos[i][2], corpos[i][3]); vec3 v1(corpos[i][4], corpos[i][5], corpos[i][6]);
+		v1.x = v1.x + corpos[i][7] * dt; v1.y = v1.y + corpos[i][8] * dt; v1.z = v1.z + corpos[i][9] * dt;
         p1.x = p1.x + v1.x*dt; p1.y = p1.y + v1.y*dt; p1.z = p1.z + v1.z*dt;
+        corpos[i][4] = v1.x; corpos[i][5] = v1.y; corpos[i][6] = v1.z;
         corpos[i][1] = p1.x; corpos[i][2] = p1.y; corpos[i][3] = p1.z;
+
     }
 
     //std::cout << corpos[0][1] << " " << corpos[1][1] << std::endl;
