@@ -52,10 +52,9 @@ int main(void)
         //desenha(num);
         desenhag();
 
+		std::cout << num << std::endl;
         num++;
-        if (num >= 40000) {
-            num = 0;
-        }
+
         //std::cout << rand()/double(RAND_MAX) << std::endl;
         
         // aqui eu boto pra o programa fechar no Esc

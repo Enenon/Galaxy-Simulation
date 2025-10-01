@@ -127,7 +127,7 @@ vec3 aceleracao(float F, vec3 p1, vec3 p2) {
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-const int n = 500;
+const int n = 5000;
 const float massa = 1e12/n*mSol;
 double corpos[n][11];
 float cores_corpos[n][3];
@@ -149,8 +149,8 @@ void inicializarCorpos() {
         corpos[i][6] = 0;
         corpos[i][7] = 0; corpos[i][8] = 0; corpos[i][9] = 0;
         corpos[i][10] = 0;
-
-        cores_corpos[i][0] = 0.8 + cos(4*angulocorpo) / 2.5; cores_corpos[i][1] = 0.8 + sin(4*angulocorpo) / 2.5;  cores_corpos[i][2] = 0.8;
+        
+        cores_corpos[i][0] = 0.5 + cos(4*angulocorpo) / 2; cores_corpos[i][1] = 0.2 - cos(4 * angulocorpo) / 2 - sin(4 * angulocorpo) / 2;  cores_corpos[i][2] = 0.8 + sin(4 * angulocorpo) / 2.5;
     }
 }
 // inicializarCorpos() é executado na main, porque a primitivas.h não pode realizar nenhum laço ou algo do tipo
@@ -166,7 +166,7 @@ void desenhag() {
     float m1, m2;
     m1 = 1; m2 = 0.7;
     float momento[3] = { 0,0,0 };
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for (int i = 0;i < n;i++) { // i é o que sofre a força
         vec3 p1(corpos[i][1], corpos[i][2], corpos[i][3]); vec3 v1(corpos[i][4], corpos[i][5], corpos[i][6]);
         vec3 a1(0, 0, 0);
