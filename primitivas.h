@@ -127,7 +127,7 @@ vec3 aceleracao(float F, vec3 p1, vec3 p2) {
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-const int n = 10000;
+const int n = 2000;
 const float massa = 1e12/n*mSol;
 double corpos[n][11];
 float cores_corpos[n][3];
@@ -137,8 +137,8 @@ void inicializarCorpos() {
     float espacamento_y = 150;
     float magnitudev = 1;
     for (int i = 0; i < n; i++) {
-        float raiocorpo = rng() * espacamento;
-        float angulocorpo = rng() * 2 * M_PI;
+        float raiocorpo = rng() * espacamento; float angulocorpo = rng() * 2 * M_PI;
+        //float posx = 2 * (rng() - 0.5) * espacamento; float posy = 2 * (rng() - 0.5) * espacamento; float raiocorpo = sqrt(posx * posx + posy * posy); float angulocorpo = atan2(posy, posx);
         // Atribuição correta, elemento por elemento
         corpos[i][0] = massa;
         corpos[i][1] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
@@ -150,7 +150,7 @@ void inicializarCorpos() {
         corpos[i][7] = 0; corpos[i][8] = 0; corpos[i][9] = 0;
         corpos[i][10] = 0;
         
-        cores_corpos[i][0] = 0.5 + cos(4*angulocorpo) / 2; cores_corpos[i][1] = 0.2 - cos(4 * angulocorpo) / 2 - sin(4 * angulocorpo) / 2;  cores_corpos[i][2] = 0.8 + sin(4 * angulocorpo) / 2.5;
+        cores_corpos[i][0] = 0.9 + cos(2*angulocorpo) / 2.5; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) / 2.5;
     }
 }
 // inicializarCorpos() é executado na main, porque a primitivas.h não pode realizar nenhum laço ou algo do tipo
