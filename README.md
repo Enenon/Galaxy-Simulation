@@ -6,8 +6,8 @@ primitivas.h é onde tudo acontece;
 
 Para o programa rodar com mais eficiência, você pode implementar o paralelismo da seguinte forma:
 
-Para GCC/G++, adicione a flag -fopenmp:
-g++ -fopenmp gui.cpp -o {programa}
+- Para GCC/G++, adicione a flag -fopenmp:
+```g++ -fopenmp gui.cpp -o {programa}```
 
-Para Visual Studio:
+- Para Visual Studio:
 Properties > C/C++ > Language > Open MP Support.
