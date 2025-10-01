@@ -10,12 +10,13 @@
 
 float num = 0.0;
 
-
+double pastTime = 0.0;
 
 int main(void)
 {
     const int largura = 1920;
     const int altura = 1080;
+	
 
     inicializarCorpos();
 
@@ -51,8 +52,10 @@ int main(void)
 
         //desenha(num);
         desenhag();
-
-		std::cout << num << std::endl;
+		double actualTime = glfwGetTime();
+		std::cout << num << " ";
+        std::cout << "FPS: " << 1.0 / (actualTime - pastTime) << std::endl;
+		pastTime = actualTime;
         num++;
 
         //std::cout << rand()/double(RAND_MAX) << std::endl;

@@ -127,7 +127,7 @@ vec3 aceleracao(float F, vec3 p1, vec3 p2) {
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-const int n = 5000;
+const int n = 10000;
 const float massa = 1e12/n*mSol;
 double corpos[n][11];
 float cores_corpos[n][3];
@@ -191,12 +191,16 @@ void desenhag() {
                 
         }}
         glLoadIdentity();
-        desenhaPonto(1.3, vec3(corpos[i][1]*80/espacamento, corpos[i][2]*80/espacamento, corpos[i][3]), cores_corpos[i]);
+        
         //for (int k = 0; k < 3; k++) {
         //    momento[k] = momento[k] + corpos[i][0] * corpos[i][k + 4];
         //}
     }
+    //#pragma omp parallel for
     for (int i = 0; i < n; i++) {
+        if (corpos[i][10] == 0) {
+            desenhaPonto(1.3, vec3(corpos[i][1] * 80 / espacamento, corpos[i][2] * 80 / espacamento, corpos[i][3]), cores_corpos[i]);
+		}
         vec3 p1(corpos[i][1], corpos[i][2], corpos[i][3]); vec3 v1(corpos[i][4], corpos[i][5], corpos[i][6]);
 		v1.x = v1.x + corpos[i][7] * dt; v1.y = v1.y + corpos[i][8] * dt; v1.z = v1.z + corpos[i][9] * dt;
         p1.x = p1.x + v1.x*dt; p1.y = p1.y + v1.y*dt; p1.z = p1.z + v1.z*dt;
