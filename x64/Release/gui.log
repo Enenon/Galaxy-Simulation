@@ -134,115 +134,49 @@ C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(73,13): warn
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(106,14): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(132,27): warning C4305: 'inicializando': truncamento de 'double' para 'float'
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(139,27): warning C4305: 'inicializando': truncamento de 'double' para 'float'
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(141,66): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(148,66): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(154,34): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(154,27): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(154,83): warning C4305: '=': truncamento de 'double' para 'float'
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(155,96): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(154,114): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(156,95): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(169,18): warning C4305: '=': truncamento de 'double' para 'float'
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(161,34): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(173,56): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(161,83): warning C4305: '=': truncamento de 'double' para 'float'
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(173,42): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(161,114): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(173,28): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(176,18): warning C4305: '=': truncamento de 'double' para 'float'
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(173,107): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(214,26): warning C4305: 'argumento': truncamento de 'double' para 'float'
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(173,93): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(237,31): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(173,79): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(254,78): warning C4244: 'argumento': conversão de 'double' para 'GLfloat', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(180,64): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(254,49): warning C4244: 'argumento': conversão de 'double' para 'GLfloat', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(180,50): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(254,20): warning C4244: 'argumento': conversão de 'double' para 'GLfloat', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(180,36): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(181,64): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(181,50): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(181,36): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(182,53): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(207,113): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(207,87): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(207,54): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(207,26): warning C4305: 'argumento': truncamento de 'double' para 'float'
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(209,56): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(209,42): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(209,28): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(209,107): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(209,93): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(209,79): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(210,15): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(210,48): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(210,81): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(230,31): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(247,78): warning C4244: 'argumento': conversão de 'double' para 'GLfloat', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(247,49): warning C4244: 'argumento': conversão de 'double' para 'GLfloat', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(247,20): warning C4244: 'argumento': conversão de 'double' para 'GLfloat', possível perda de dados
-  (compilando o arquivo fonte 'gui.cpp')
-  
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(251,38): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(258,38): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(53,30): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
@@ -260,8 +194,8 @@ C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\matplotlibcpp.h(1832,48):
           consulte a referência à instanciação 'bool matplotlibcpp::plot<double>(const std::vector<double,std::allocator<double>> &,const std::string &)' do modelo que está sendo compilada
   
   Gerando código
-  8 of 106 functions ( 7.5%) were compiled, the rest were copied from previous compilation.
+  9 of 106 functions ( 8.5%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    21 functions had inline decision re-evaluated but remain unchanged
+    0 functions had inline decision re-evaluated but remain unchanged
   Finalizada a geração de código
   gui.vcxproj -> C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\x64\Release\gui.exe

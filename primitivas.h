@@ -125,12 +125,19 @@ vec3 aceleracao(float F, vec3 p1, vec3 p2) {
 
 }
 
+struct corpo {
+    float massa;
+    float pos[3];
+    float vel[3];
+    float acc[3];
+    bool exist;
+};
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-const int n = 11001;
+const int n = 11000;
 const float massa = 1e12/n*mSol;
-double corpos[n][11];
+corpo corpos[n];
 float cores_corpos[n][3];
 float espacamento = 110e3*AL;
 void inicializarCorpos() {
@@ -141,15 +148,15 @@ void inicializarCorpos() {
         float raiocorpo = rng() * espacamento; float angulocorpo = rng() * 2 * M_PI;
         //float posx = 2 * (rng() - 0.5) * espacamento; float posy = 2 * (rng() - 0.5) * espacamento; float raiocorpo = sqrt(posx * posx + posy * posy); float angulocorpo = atan2(posy, posx);
         // Atribuição correta, elemento por elemento
-        corpos[i][0] = massa;
-        corpos[i][1] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
-        corpos[i][2] = raiocorpo * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
-        corpos[i][3] = -200 + rng()*0.01;
-        corpos[i][4] = -sin(angulocorpo) * sqrt(G * massa * n * raiocorpo / pow(espacamento,2)) * magnitudev;
-        corpos[i][5] = cos(angulocorpo) * sqrt(G * massa * n * raiocorpo / pow(espacamento,2)) * magnitudev; //(rng() - 0.5)
-        corpos[i][6] = 0;
-        corpos[i][7] = 0; corpos[i][8] = 0; corpos[i][9] = 0;
-        corpos[i][10] = 0;
+        corpos[i].massa = massa;
+        corpos[i].pos[0] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
+        corpos[i].pos[1] = raiocorpo * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
+		corpos[i].pos[2] = -200 + rng() * 0.01;
+		corpos[i].vel[0] = -sin(angulocorpo) * sqrt(G * massa * n * raiocorpo / pow(espacamento, 2)) * magnitudev;
+		corpos[i].vel[1] = cos(angulocorpo) * sqrt(G * massa * n * raiocorpo / pow(espacamento, 2)) * magnitudev;
+		corpos[i].vel[2] = 0;
+		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
+		corpos[i].exist = true;
         
         cores_corpos[i][0] = 0.9 + cos(2*angulocorpo) / 2.5; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) / 2.5;
     }
@@ -170,21 +177,21 @@ void desenhag() {
     float momento[3] = { 0,0,0 };
     #pragma omp parallel for
     for (int i = 0;i < n;i++) { // i é o que sofre a força
-        vec3 p1(corpos[i][1], corpos[i][2], corpos[i][3]); vec3 v1(corpos[i][4], corpos[i][5], corpos[i][6]);
+        vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
         vec3 a1(0, 0, 0);
-		corpos[i][7] = 0; corpos[i][8] = 0; corpos[i][9] = 0;
+		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
         //#pragma omp parallel for
         for (int j = 0; j < n; j++) {
-            if (i != j && corpos[i][10] == 0 && corpos[j][10] == 0) {
-
-                vec3 p2(corpos[j][1], corpos[j][2], corpos[j][3]);
-                vec3 v2(corpos[j][4], corpos[j][5], corpos[j][6]);
-                float a = Fgravitacional(corpos[j][0], p1, p2);
+            if (i != j && corpos[i].exist == true && corpos[j].exist == true) {
+				vec3 p2(corpos[j].pos[0], corpos[j].pos[1], corpos[j].pos[2]);
+				vec3 v2(corpos[j].vel[0], corpos[j].vel[1], corpos[j].vel[2]);
+                float a = Fgravitacional(corpos[j].massa, p1, p2);
                 a1 = aceleracao(a, p1, p2); // cálculos mostraram que implementar direto na velocidade dá no mesmo q na aceleração
-				corpos[i][7] = corpos[i][7] + a1.x; corpos[i][8] = corpos[i][8] + a1.y; corpos[i][9] = corpos[i][9] + a1.z;
-                if (i == 0 && j == 1) {
-                    cout << "posicoes: " << sqrt(pow(p1.x-p2.x,2) + pow(p1.y-p2.y,2)) << endl;
-                }
+				corpos[i].acc[0] = corpos[i].acc[0] + a1.x; corpos[i].acc[1] = corpos[i].acc[1] + a1.y; corpos[i].acc[2] = corpos[i].acc[2] + a1.z;
+                if (i==1 && j==0) {
+                    std::cout << corpos[i].pos[0] << " " << p1.x << std::endl;
+				}
+				
                 //v1 = velocidade(F, v1, p1, p2);
                 //v2 = velocidade(-F, m2, v2, p2, p1);
                 // atualizar posições
@@ -203,14 +210,14 @@ void desenhag() {
     }
     //#pragma omp parallel for
     for (int i = 0; i < n; i++) {
-        if (corpos[i][10] == 0) {
-            desenhaPonto(1.3, vec3(corpos[i][1] * 80 / espacamento, corpos[i][2] * 80 / espacamento, corpos[i][3]), cores_corpos[i]);
+        if (corpos[i].exist == true) {
+            desenhaPonto(1.3, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2]), cores_corpos[i]);
 		}
-        vec3 p1(corpos[i][1], corpos[i][2], corpos[i][3]); vec3 v1(corpos[i][4], corpos[i][5], corpos[i][6]);
-		v1.x = v1.x + corpos[i][7] * dt; v1.y = v1.y + corpos[i][8] * dt; v1.z = v1.z + corpos[i][9] * dt;
+        vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
+		v1.x = v1.x + corpos[i].acc[0] * dt; v1.y = v1.y + corpos[i].acc[1] * dt; v1.z = v1.z + corpos[i].acc[2] * dt;
         p1.x = p1.x + v1.x*dt; p1.y = p1.y + v1.y*dt; p1.z = p1.z + v1.z*dt;
-        corpos[i][4] = v1.x; corpos[i][5] = v1.y; corpos[i][6] = v1.z;
-        corpos[i][1] = p1.x; corpos[i][2] = p1.y; corpos[i][3] = p1.z;
+        corpos[i].vel[0] = v1.x; corpos[i].vel[1] = v1.y; corpos[i].vel[2] = v1.z;
+        corpos[i].pos[0] = p1.x; corpos[i].pos[1] = p1.y; corpos[i].pos[2] = p1.z;
 
     }
 
