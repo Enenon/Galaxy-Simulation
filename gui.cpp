@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include<Windows.h>
 #include <random>
 #include <GLFW/glfw3.h>
@@ -6,11 +7,17 @@
 #include "cores.h"
 #include "primitivas.h"
 #include <omp.h> // paralelismo
+#include <cmath>
+
+#include "matplotlibcpp.h"
+
 
 
 float num = 0.0;
 
 double pastTime = 0.0;
+
+namespace plt = matplotlibcpp;
 
 int main(void)
 {
@@ -30,6 +37,14 @@ int main(void)
         glfwTerminate();
         return -1;
     }
+
+    std::vector<double> x(n), y(n);
+    for (int i = 0; i < n; ++i) {
+        x.at(i) = i * 2 * M_PI / n; // Gera valores de 0 a 2*PI
+        y.at(i) = std::sin(x.at(i));
+    }
+	
+
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
@@ -53,10 +68,12 @@ int main(void)
         //desenha(num);
         desenhag();
 		double actualTime = glfwGetTime();
-		std::cout << num << " ";
+        std::cout << num << " ";
+
         std::cout << "FPS: " << 1.0 / (actualTime - pastTime) << std::endl;
 		pastTime = actualTime;
         num++;
+
 
         //std::cout << rand()/double(RAND_MAX) << std::endl;
         
@@ -71,6 +88,8 @@ int main(void)
         /* Poll for and process events */
         glfwPollEvents();
     }
+    
+
 
     glfwTerminate();
     return 0;

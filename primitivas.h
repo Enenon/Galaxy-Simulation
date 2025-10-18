@@ -1,4 +1,5 @@
 #define M_PI 3.1415926535897932384626433832795
+#pragma warning(disable : n)
 
 // unidades de medida
 const double milenio = 1;
@@ -127,7 +128,7 @@ vec3 aceleracao(float F, vec3 p1, vec3 p2) {
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-const int n = 2000;
+const int n = 11001;
 const float massa = 1e12/n*mSol;
 double corpos[n][11];
 float cores_corpos[n][3];
@@ -153,6 +154,7 @@ void inicializarCorpos() {
         cores_corpos[i][0] = 0.9 + cos(2*angulocorpo) / 2.5; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) / 2.5;
     }
 }
+
 // inicializarCorpos() é executado na main, porque a primitivas.h não pode realizar nenhum laço ou algo do tipo
 
 
@@ -180,6 +182,9 @@ void desenhag() {
                 float a = Fgravitacional(corpos[j][0], p1, p2);
                 a1 = aceleracao(a, p1, p2); // cálculos mostraram que implementar direto na velocidade dá no mesmo q na aceleração
 				corpos[i][7] = corpos[i][7] + a1.x; corpos[i][8] = corpos[i][8] + a1.y; corpos[i][9] = corpos[i][9] + a1.z;
+                if (i == 0 && j == 1) {
+                    cout << "posicoes: " << sqrt(pow(p1.x-p2.x,2) + pow(p1.y-p2.y,2)) << endl;
+                }
                 //v1 = velocidade(F, v1, p1, p2);
                 //v2 = velocidade(-F, m2, v2, p2, p1);
                 // atualizar posições

@@ -245,9 +245,9 @@ C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(247,20): war
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(251,38): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(54,30): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(54,24): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(54,18): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(53,30): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(53,24): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(53,18): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\matplotlibcpp.h(1832,48): warning C4244: '=': conversão de 'size_t' para '_Ty', possível perda de dados
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\matplotlibcpp.h(1832,48): warning C4244:         with
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\matplotlibcpp.h(1832,48): warning C4244:         [
@@ -259,7 +259,9 @@ C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\matplotlibcpp.h(1832,48):
           C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\matplotlibcpp.h(2896,12):
           consulte a referência à instanciação 'bool matplotlibcpp::plot<double>(const std::vector<double,std::allocator<double>> &,const std::string &)' do modelo que está sendo compilada
   
-LINK : warning LNK4098: defaultlib 'MSVCRT' conflita com uso de outras bibliotecas; use /NODEFAULTLIB:library
-gui.obj : error LNK2019: símbolo externo não resolvido, __imp__Py_NegativeRefcount, referenciado na função Py_DECREF
-gui.obj : error LNK2019: símbolo externo não resolvido, __imp__Py_RefTotal, referenciado na função Py_DECREF
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\x64\Debug\gui.exe : fatal error LNK1120: 2 externo não resolvidos
+  Gerando código
+  8 of 106 functions ( 7.5%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    21 functions had inline decision re-evaluated but remain unchanged
+  Finalizada a geração de código
+  gui.vcxproj -> C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\x64\Release\gui.exe
