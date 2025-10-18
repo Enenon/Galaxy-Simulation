@@ -2658,6 +2658,7 @@ inline void save(const std::string& filename, const int dpi=0)
     }
 
     PyObject* res = PyObject_Call(detail::_interpreter::get().s_python_function_save, args, kwargs);
+    PyErr_Print();
     if (!res) throw std::runtime_error("Call to save() failed.");
 
     Py_DECREF(args);

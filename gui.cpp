@@ -8,6 +8,7 @@
 #include "primitivas.h"
 #include <omp.h> // paralelismo
 #include <cmath>
+#include <map>
 
 #include "matplotlibcpp.h"
 
@@ -89,8 +90,37 @@ int main(void)
         glfwPollEvents();
     }
     
+	std::cout << "Calculando raio x velocidade..." << std::endl;
+
+    const int numDivisoes = 500;
+    double velxraio[numDivisoes * 2][2] = {0}; // 0 = velocidade, 1 = numero de corpos
+    for (int i = 0; i < n; i++) {
+		float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
+		float vel = sqrt(corpos[i].vel[0] * corpos[i].vel[0] + corpos[i].vel[1] * corpos[i].vel[1]);
+		int indice = (int)(raio / espacamento * numDivisoes);
+        if (indice < numDivisoes * 2) {
+            velxraio[indice][0] = velxraio[indice][0] + vel;
+		    velxraio[indice][1] = velxraio[indice][1] + 1;
+        }
+		
+    }
 
 
+	std::vector<double> raioPlot, velPlot;
+    for (int i = 0; i < numDivisoes; i++) {
+        if (velxraio[i][1] > 0) {
+            raioPlot.push_back(i * espacamento / numDivisoes);
+            velPlot.push_back(velxraio[i][0] / velxraio[i][1]);
+        }
+
+    }
+	plt::figure_size(1200, 780);
+	plt::plot(raioPlot, velPlot);
+	plt::xlabel("Raio (AL)");
+	plt::ylabel("Velocidade (AL/milenio)");
+	plt::title("Velocidade x Raio");
+	plt::save("velxraio.png"); 
+	std::cout << "Grafico salvo como velxraio.png" << std::endl;
     glfwTerminate();
     return 0;
 }

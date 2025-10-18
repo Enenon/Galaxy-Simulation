@@ -135,7 +135,7 @@ struct corpo {
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-const int n = 11000;
+const int n = 4000;
 const float massa = 1e12/n*mSol;
 corpo corpos[n];
 float cores_corpos[n][3];
