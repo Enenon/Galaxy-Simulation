@@ -1,8 +1,15 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include<Windows.h>
+#include <Windows.h>
+#include "platform_compat.h"
 #include <random>
 #include <GLFW/glfw3.h>
-#include <gl/GLU.h>
+#ifdef _WIN32
+    #include <gl/GL.h>
+    #include <gl/GLU.h>
+#else
+    #include <GL/gl.h>
+    #include <GL/glu.h>
+#endif
 #include <iostream>
 #include "cores.h"
 #include "primitivas.h"
@@ -82,6 +89,11 @@ int main(void)
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, GLFW_TRUE);
         }
+        else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+            glLoadIdentity();
+			glTranslatef(100.0, 0.0, 1.0);
+            glRotated(1.0, 1.0, 0.0, 0.0);
+		}
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -114,10 +126,11 @@ int main(void)
         }
 
     }
-	plt::figure_size(1200, 780);
+	plt::figure_size(800, 500);
 	plt::plot(raioPlot, velPlot);
 	plt::xlabel("Raio (AL)");
 	plt::ylabel("Velocidade (AL/milenio)");
+	plt::grid(true);
 	plt::title("Velocidade x Raio");
 	plt::save("velxraio.png"); 
 	std::cout << "Grafico salvo como velxraio.png" << std::endl;

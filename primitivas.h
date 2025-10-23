@@ -96,6 +96,7 @@ void desenhaCubo(float tamanho) {
 void desenhaPonto(float r,vec3 p,colora cor) {
     glColor4fv(cor);
     glPointSize(r);
+    
     glEnable(GL_POINT_SMOOTH);
     glBegin(GL_POINTS);
         glVertex3fv(&p.x);
@@ -135,14 +136,12 @@ struct corpo {
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-const int n = 4000;
+const int n = 800;
 const float massa = 1e12/n*mSol;
 corpo corpos[n];
 float cores_corpos[n][3];
 float espacamento = 110e3*AL;
 void inicializarCorpos() {
-    float espacamento_x = 200;
-    float espacamento_y = 150;
     float magnitudev = 1;
     for (int i = 0; i < n; i++) {
         float raiocorpo = rng() * espacamento; float angulocorpo = rng() * 2 * M_PI;
@@ -175,6 +174,7 @@ void desenhag() {
     float m1, m2;
     m1 = 1; m2 = 0.7;
     float momento[3] = { 0,0,0 };
+    
     #pragma omp parallel for
     for (int i = 0;i < n;i++) { // i é o que sofre a força
         vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
