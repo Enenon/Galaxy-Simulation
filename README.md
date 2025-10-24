@@ -26,3 +26,22 @@ Foi adicionado o matplotlib-cpp para a plotagem do gráfico velocidade x raio. M
   - Adicionar ao Vinculador -> Diretórios de Bibliotecas Adicionais: ```C:\Users\{Diretório do Python}\Python\Python311\libs```;
   - Adicionar ao Vinculador -> Entrada -> Dependências Adicionais: ```python311.lib```.
 
+# Compilando em Linux:
+
+Os comandos para instalar as dependências do Linux são:
+- Python/Matplotlib: ```sudo apt install libglfw3-dev```;
+- Pacote de desenvolvimento Python: ```sudo apt install python3-dev```;
+- GLFW: ```sudo apt install libglfw3-dev```;
+- OpenGL Utility Library (GLU): ```sudo apt install libglu1-mesa-dev```;
+
+Em resumo, para compilar o programa no Linux é necessário um código como esse: ```g++ gui.cpp -o result_plot -I /usr/include/python3.12 -I /usr/lib/python3/dist-packages/numpy/core/include \
+ -lpython3.12 -lGL -lGLU -lglfw \
+ -fopenmp \
+ -o teste```
+ Ou, você pode usar o CMake para facilitar o processo, da seguinte forma:
+
+ 1 - Instale o CMake: ```sudo apt install python3.12-numpy```;
+ 2 - Crie um diretório para a build (onde será hospedado o executável e seus arquivos referentes): ```mkdir build```;
+ 3 - Vá ao diretório: ```cd build```;
+ 4 - Rode o CMAKE: ```cmake {Diretório do Galaxy-Simulation}```;
+ 5 - Compile: ```make```.
