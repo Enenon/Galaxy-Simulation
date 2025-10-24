@@ -38,7 +38,11 @@ Em resumo, para compilar o programa no Linux é necessário um código como esse
  Ou, você pode usar o CMake para facilitar o processo, da seguinte forma:
 
  1 - Instale o CMake: ```sudo apt install python3.12-numpy```;
+ 
  2 - Crie um diretório para a build (onde será hospedado o executável e seus arquivos referentes): ```mkdir build```;
+ 
  3 - Vá ao diretório: ```cd build```;
+ 
  4 - Rode o CMAKE: ```cmake {Diretório do Galaxy-Simulation}```;
+ 
  5 - Compile: ```make```.
