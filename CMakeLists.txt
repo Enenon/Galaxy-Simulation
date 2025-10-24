@@ -1,34 +1,49 @@
-cmake_minimum_required(VERSION 3.16)
-project(GalaxySimulation C CXX)
+# Versão mínima do CMake
+cmake_minimum_required(VERSION 3.12)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Nome do projeto
+project(MeuProjetoGrafico)
 
-# Source files present in the repo
-add_executable(galaxy
-    gui.cpp
+# --- Encontrar Bibliotecas ---
+
+# 1. Encontrar Python (incluindo headers de desenvolvimento)
+# Isso substitui o -I/usr/include/python3.12 e -lpython3.12
+find_package(Python 3.12 REQUIRED COMPONENTS Interpreter Development)
+find_package(Threads REQUIRED)
+
+# 2. Encontrar o Numpy (o jeito "correto" via CMake)
+# Isso executa um mini-script Python para perguntar ao Numpy onde ele está
+execute_process(
+  COMMAND ${Python_EXECUTABLE} -c "import numpy; print(numpy.get_include())"
+  OUTPUT_VARIABLE NUMPY_INCLUDE_DIR
+  OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+# Informa ao CMake sobre o diretório de include do Numpy
+include_directories(${NUMPY_INCLUDE_DIR})
 
-# Find system GLFW and OpenGL
-find_package(PkgConfig REQUIRED)
+
+# 3. Encontrar OpenGL, GLU e GLFW
+# Isso substitui o -lGL -lGLU -lglfw
 find_package(OpenGL REQUIRED)
-pkg_check_modules(GLFW3 REQUIRED glfw3)
+find_package(GLU REQUIRED)
+find_package(glfw3 3.3 REQUIRED) # 3.3 é uma versão comum
 
-target_include_directories(galaxy PRIVATE
-    ${CMAKE_SOURCE_DIR}
-    ${GLFW3_INCLUDE_DIRS}
+# --- Configurar o Executável ---
+
+# Diz ao CMake para criar um executável chamado "result_plot" a partir de "gui.cpp"
+add_executable(result_plot gui.cpp)
+
+# Linka todas as bibliotecas que encontramos com o seu executável
+target_link_libraries(result_plot PRIVATE
+    ${Python_LIBRARIES}  
+    OpenGL::GL           
+    OpenGL::GLU          
+    glfw                 
+    Threads::Threads  
 )
 
-target_link_libraries(galaxy
-    GL
-    GLU
-    ${GLFW3_LIBRARIES}
-    X11 Xrandr Xinerama Xcursor Xi 
+# Adiciona os diretórios de include necessários
+target_include_directories(result_plot PRIVATE
+    ${Python_INCLUDE_DIRS}
+    ${NUMPY_INCLUDE_DIR}
 )
-
-# Some Ubuntu/GLFW builds prefer this form:
-# target_link_libraries(galaxy OpenGL::GL glfw)
-
-# On some distros, you may also need the X11 libs explicitly:
-# target_link_libraries(galaxy X11 Xrandr Xinerama Xcursor Xi)
-
