@@ -34,10 +34,7 @@ Os comandos para instalar as dependências do Linux são:
 - GLFW: ```sudo apt install libglfw3-dev```;
 - OpenGL Utility Library (GLU): ```sudo apt install libglu1-mesa-dev```;
 
-Em resumo, para compilar o programa no Linux é necessário um código como esse: ```g++ gui.cpp -o result_plot -I /usr/include/python3.12 -I /usr/lib/python3/dist-packages/numpy/core/include \
- -lpython3.12 -lGL -lGLU -lglfw \
- -fopenmp \
- -o teste```
+Em resumo, para compilar o programa no Linux é necessário um código como esse: ```g++ gui.cpp -o result_plot -I /usr/include/python3.12 -I /usr/lib/python3/dist-packages/numpy/core/include  -lpython3.12 -lGL -lGLU -lglfw  -fopenmp  -o teste```
  Ou, você pode usar o CMake para facilitar o processo, da seguinte forma:
 
  1 - Instale o CMake: ```sudo apt install python3.12-numpy```;
