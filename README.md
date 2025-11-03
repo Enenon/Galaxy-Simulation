@@ -29,7 +29,7 @@ Foi adicionado o matplotlib-cpp para a plotagem do gráfico velocidade x raio. M
 # Compilando em Linux:
 
 Os comandos para instalar as dependências do Linux são:
-- Python/Matplotlib: ```sudo apt install libglfw3-dev```;
+- Python/Matplotlib: ```sudo apt install python3-numpy```;
 - Pacote de desenvolvimento Python: ```sudo apt install python3-dev```;
 - GLFW: ```sudo apt install libglfw3-dev```;
 - OpenGL Utility Library (GLU): ```sudo apt install libglu1-mesa-dev```;
