@@ -1,5 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include <Windows.h>
+//#include <Windows.h>
 #include "platform_compat.h"
 #include <random>
 #include <GLFW/glfw3.h>
@@ -20,12 +20,42 @@
 #include "matplotlibcpp.h"
 
 
-
+const float intervaloPlot = 60; // <--- minutos
+int numplots = 0;
 float num = 0.0;
 
 double pastTime = 0.0;
 
 namespace plt = matplotlibcpp;
+
+static void plotar() {
+
+    std::cout << "Calculando raio x velocidade..." << std::endl;
+
+    const int numDivisoes = 500;
+    double velxraio[numDivisoes * 2][2] = { 0 }; // 0 = velocidade, 1 = numero de corpos
+    for (int i = 0; i < n; i++) {
+        float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
+        float vel = sqrt(corpos[i].vel[0] * corpos[i].vel[0] + corpos[i].vel[1] * corpos[i].vel[1]);
+        int indice = (int)(raio / espacamento * numDivisoes);
+        if (indice < numDivisoes * 2) {
+            velxraio[indice][0] = velxraio[indice][0] + vel;
+            velxraio[indice][1] = velxraio[indice][1] + 1;
+        }
+    }
+    std::vector<double> raioPlot, velPlot;
+    for (int i = 0; i < numDivisoes; i++) {
+        if (velxraio[i][1] > 0) {
+            raioPlot.push_back(i * espacamento / numDivisoes);
+            velPlot.push_back(velxraio[i][0] / velxraio[i][1]);
+        }
+    }
+    plt::figure_size(800, 500);
+    plt::plot(raioPlot, velPlot);
+    plt::grid(true);
+    plt::xlabel("Raio(AL)");
+    plt::ylabel("Velocidade(AL/milenio)");
+}
 
 int main(void)
 {
@@ -45,14 +75,6 @@ int main(void)
         glfwTerminate();
         return -1;
     }
-
-    std::vector<double> x(n), y(n);
-    for (int i = 0; i < n; ++i) {
-        x.at(i) = i * 2 * M_PI / n; // Gera valores de 0 a 2*PI
-        y.at(i) = std::sin(x.at(i));
-    }
-	
-
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
@@ -76,7 +98,7 @@ int main(void)
         //desenha(num);
         desenhag();
 		double actualTime = glfwGetTime();
-        std::cout << num << " ";
+        std::cout << num*dt << " milenios | ";
 
         std::cout << "FPS: " << 1.0 / (actualTime - pastTime) << std::endl;
 		pastTime = actualTime;
@@ -95,42 +117,21 @@ int main(void)
             glRotated(1.0, 1.0, 0.0, 0.0);
 		}
 
+        if (glfwGetTime() / 60 > numplots * intervaloPlot) {
+			plt::title("Velocidade x Raio apos " + std::to_string((int)(numplots * intervaloPlot)) + " milenios");
+			plotar();
+			plt::save("plots/"+std::to_string(numplots));
+            numplots++;
+        }
+
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
         /* Poll for and process events */
         glfwPollEvents();
     }
-    
-	std::cout << "Calculando raio x velocidade..." << std::endl;
 
-    const int numDivisoes = 500;
-    double velxraio[numDivisoes * 2][2] = {0}; // 0 = velocidade, 1 = numero de corpos
-    for (int i = 0; i < n; i++) {
-		float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
-		float vel = sqrt(corpos[i].vel[0] * corpos[i].vel[0] + corpos[i].vel[1] * corpos[i].vel[1]);
-		int indice = (int)(raio / espacamento * numDivisoes);
-        if (indice < numDivisoes * 2) {
-            velxraio[indice][0] = velxraio[indice][0] + vel;
-		    velxraio[indice][1] = velxraio[indice][1] + 1;
-        }
-		
-    }
-
-
-	std::vector<double> raioPlot, velPlot;
-    for (int i = 0; i < numDivisoes; i++) {
-        if (velxraio[i][1] > 0) {
-            raioPlot.push_back(i * espacamento / numDivisoes);
-            velPlot.push_back(velxraio[i][0] / velxraio[i][1]);
-        }
-
-    }
-	plt::figure_size(800, 500);
-	plt::plot(raioPlot, velPlot);
-	plt::xlabel("Raio (AL)");
-	plt::ylabel("Velocidade (AL/milenio)");
-	plt::grid(true);
+    plotar();
 	plt::title("Velocidade x Raio");
 	plt::save("velxraio.png"); 
 	std::cout << "Grafico salvo como velxraio.png" << std::endl;

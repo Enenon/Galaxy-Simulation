@@ -168,6 +168,7 @@ void inicializarCorpos() {
 //vec3 p1(1, 1, -10); vec3 v1(-0.001, 0.001, 0);
 //vec3 p2(-1, -1, -10); vec3 v2(0.002, 0, 0);
 
+bool leap = 0;
 
 void desenhag() {
 	using namespace std;
@@ -188,9 +189,6 @@ void desenhag() {
                 float a = Fgravitacional(corpos[j].massa, p1, p2);
                 a1 = aceleracao(a, p1, p2); // cálculos mostraram que implementar direto na velocidade dá no mesmo q na aceleração
 				corpos[i].acc[0] = corpos[i].acc[0] + a1.x; corpos[i].acc[1] = corpos[i].acc[1] + a1.y; corpos[i].acc[2] = corpos[i].acc[2] + a1.z;
-                if (i==1 && j==0) {
-                    std::cout << corpos[i].pos[0] << " " << p1.x << std::endl;
-				}
 				
                 //v1 = velocidade(F, v1, p1, p2);
                 //v2 = velocidade(-F, m2, v2, p2, p1);

@@ -155,30 +155,31 @@ C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(160,83): war
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(160,114): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(175,18): warning C4305: '=': truncamento de 'double' para 'float'
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(176,18): warning C4305: '=': truncamento de 'double' para 'float'
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(214,26): warning C4305: 'argumento': truncamento de 'double' para 'float'
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(212,26): warning C4305: 'argumento': truncamento de 'double' para 'float'
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(237,31): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(235,31): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(254,78): warning C4244: 'argumento': conversão de 'double' para 'GLfloat', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(252,78): warning C4244: 'argumento': conversão de 'double' para 'GLfloat', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(254,49): warning C4244: 'argumento': conversão de 'double' para 'GLfloat', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(252,49): warning C4244: 'argumento': conversão de 'double' para 'GLfloat', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(254,20): warning C4244: 'argumento': conversão de 'double' para 'GLfloat', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(252,20): warning C4244: 'argumento': conversão de 'double' para 'GLfloat', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(258,38): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(256,38): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(54,30): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(54,24): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(54,18): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(23,29): warning C4305: 'inicializando': truncamento de 'double' para 'float'
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(83,30): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(83,24): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(83,18): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\matplotlibcpp.h(1832,48): warning C4244: '=': conversão de 'size_t' para '_Ty', possível perda de dados
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\matplotlibcpp.h(1832,48): warning C4244:         with
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\matplotlibcpp.h(1832,48): warning C4244:         [
@@ -191,7 +192,8 @@ C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\matplotlibcpp.h(1832,48):
           consulte a referência à instanciação 'bool matplotlibcpp::plot<double>(const std::vector<double,std::allocator<double>> &,const std::string &)' do modelo que está sendo compilada
   
   Gerando código
-  Previous IPDB and IOBJ mismatch, fall back to full compilation.
-  All 268 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  1 of 269 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
   Finalizada a geração de código
   gui.vcxproj -> C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\x64\Release\gui.exe

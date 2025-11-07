@@ -1,34 +1,61 @@
-cmake_minimum_required(VERSION 3.16)
-project(GalaxySimulation C CXX)
+# Set the minimum CMake version and project name
+cmake_minimum_required(VERSION 3.15)
+project(GalaxySimulation CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+# Set the C++ standard to C++20 (as mentioned in your README)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Source files present in the repo
-add_executable(galaxy
-    gui.cpp
-)
+# --- Find All Dependencies ---
 
-# Find system GLFW and OpenGL
-find_package(PkgConfig REQUIRED)
+# 1. Find OpenMP (for parallelism)
+find_package(OpenMP REQUIRED)
+
+# 2. Find OpenGL and GLU (for graphics)
 find_package(OpenGL REQUIRED)
-pkg_check_modules(GLFW3 REQUIRED glfw3)
+find_package(GLU REQUIRED)
 
-target_include_directories(galaxy PRIVATE
-    ${CMAKE_SOURCE_DIR}
-    ${GLFW3_INCLUDE_DIRS}
+# 3. Find GLFW (for the window)
+find_package(glfw3 3.3 REQUIRED)
+
+# 4. Find Python (for matplotlibcpp)
+# This finds the interpreter, compiler flags, and libraries
+find_package(Python 3 REQUIRED COMPONENTS Development.Embed)
+
+# 5. Find NumPy
+# We use Python itself to find the NumPy header path
+execute_process(
+  COMMAND "${Python_EXECUTABLE}" -c "import numpy; print(numpy.get_include())"
+  OUTPUT_VARIABLE NumPy_INCLUDE_DIRS
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  RESULT_VARIABLE _numpy_result
 )
 
-target_link_libraries(galaxy
-    GL
-    GLU
-    ${GLFW3_LIBRARIES}
-    X11 Xrandr Xinerama Xcursor Xi 
+# Fail if NumPy isn't found
+if(NOT _numpy_result EQUAL 0)
+  message(FATAL_ERROR "Failed to find NumPy include directory. Is numpy installed? (pip install numpy)")
+endif()
+
+# --- Configure the Executable ---
+
+# Add the main C++ file as the executable
+add_executable(galaxy_sim gui.cpp)
+
+# Add all the include directories
+target_include_directories(galaxy_sim PRIVATE
+  "${CMAKE_CURRENT_SOURCE_DIR}"  # Lets it find matplotlibcpp.h, primitivas.h
+  "${OpenGL_INCLUDE_DIR}"
+  "${GLU_INCLUDE_DIR}"
+  "${glfw3_INCLUDE_DIRS}"
+  "${Python_INCLUDE_DIRS}"
+  "${NumPy_INCLUDE_DIRS}"
 )
 
-# Some Ubuntu/GLFW builds prefer this form:
-# target_link_libraries(galaxy OpenGL::GL glfw)
-
-# On some distros, you may also need the X11 libs explicitly:
-# target_link_libraries(galaxy X11 Xrandr Xinerama Xcursor Xi)
-
+# Link all the libraries
+target_link_libraries(galaxy_sim PRIVATE
+  OpenMP::OpenMP_CXX  # Link OpenMP
+  OpenGL::GL          # Link OpenGL
+  GLU::GLU            # Link GLU
+  glfw                # Link GLFW
+  Python::Python      # Link Python
+)
