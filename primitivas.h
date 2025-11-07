@@ -10,7 +10,7 @@ const float kg = mSol / 1.89e30;
 const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 1e9*AL;
 
-const float dt = 8e6*milenio;
+const float dt = 80e6*milenio;
 
 struct vec3 {
     float x, y, z;
@@ -136,7 +136,7 @@ struct corpo {
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-const int n = 800;
+const int n = 10800;
 const float massa = 1e12/n*mSol;
 corpo corpos[n];
 float cores_corpos[n][3];

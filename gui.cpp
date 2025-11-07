@@ -118,8 +118,9 @@ int main(void)
 		}
 
         if (glfwGetTime() / 60 > numplots * intervaloPlot) {
-			plt::title("Velocidade x Raio apos " + std::to_string((int)(numplots * intervaloPlot)) + " milenios");
+			
 			plotar();
+            plt::title("Velocidade x Raio apos " + std::to_string(numplots*intervaloPlot) + " minutos");
 			plt::save("plots/"+std::to_string(numplots));
             numplots++;
         }

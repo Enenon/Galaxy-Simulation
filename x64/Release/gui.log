@@ -134,6 +134,9 @@ C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(73,13): warn
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(107,14): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
+C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(140,27): warning C4305: 'inicializando': truncamento de 'double' para 'float'
+  (compilando o arquivo fonte 'gui.cpp')
+  
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(147,66): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
@@ -176,7 +179,6 @@ C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(252,20): war
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\primitivas.h(256,38): warning C4244: 'argumento': conversão de 'double' para 'float', possível perda de dados
   (compilando o arquivo fonte 'gui.cpp')
   
-C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(23,29): warning C4305: 'inicializando': truncamento de 'double' para 'float'
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(83,30): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(83,24): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
 C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\gui.cpp(83,18): warning C4305: 'argumento': truncamento de 'double' para 'GLclampf'
@@ -192,8 +194,8 @@ C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\gui\matplotlibcpp.h(1832,48):
           consulte a referência à instanciação 'bool matplotlibcpp::plot<double>(const std::vector<double,std::allocator<double>> &,const std::string &)' do modelo que está sendo compilada
   
   Gerando código
-  1 of 269 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+  16 of 281 functions ( 5.7%) were compiled, the rest were copied from previous compilation.
+    12 functions were new in current compilation
+    40 functions had inline decision re-evaluated but remain unchanged
   Finalizada a geração de código
   gui.vcxproj -> C:\Users\Enenon\Documents\GitHub\Galaxy-Simulation\x64\Release\gui.exe
