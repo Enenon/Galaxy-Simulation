@@ -84,7 +84,7 @@ int main(void)
 
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_BLEND);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // <---- ative essa linha se quiser habilitar transparência
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // <---- ative essa linha se quiser habilitar transparÃªncia
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
