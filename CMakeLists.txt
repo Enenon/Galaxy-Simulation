@@ -1,61 +1,49 @@
-# Set the minimum CMake version and project name
-cmake_minimum_required(VERSION 3.15)
-project(GalaxySimulation CXX)
+# Versão mínima do CMake
+cmake_minimum_required(VERSION 3.12)
 
-# Set the C++ standard to C++20 (as mentioned in your README)
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Nome do projeto
+project(MeuProjetoGrafico)
 
-# --- Find All Dependencies ---
+# --- Encontrar Bibliotecas ---
 
-# 1. Find OpenMP (for parallelism)
-find_package(OpenMP REQUIRED)
+# 1. Encontrar Python (incluindo headers de desenvolvimento)
+# Isso substitui o -I/usr/include/python3.12 e -lpython3.12
+find_package(Python 3.12 REQUIRED COMPONENTS Interpreter Development)
+find_package(Threads REQUIRED)
 
-# 2. Find OpenGL and GLU (for graphics)
+# 2. Encontrar o Numpy (o jeito "correto" via CMake)
+# Isso executa um mini-script Python para perguntar ao Numpy onde ele está
+execute_process(
+  COMMAND ${Python_EXECUTABLE} -c "import numpy; print(numpy.get_include())"
+  OUTPUT_VARIABLE NUMPY_INCLUDE_DIR
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+# Informa ao CMake sobre o diretório de include do Numpy
+include_directories(${NUMPY_INCLUDE_DIR})
+
+
+# 3. Encontrar OpenGL, GLU e GLFW
+# Isso substitui o -lGL -lGLU -lglfw
 find_package(OpenGL REQUIRED)
 find_package(GLU REQUIRED)
+find_package(glfw3 3.3 REQUIRED) # 3.3 é uma versão comum
 
-# 3. Find GLFW (for the window)
-find_package(glfw3 3.3 REQUIRED)
+# --- Configurar o Executável ---
 
-# 4. Find Python (for matplotlibcpp)
-# This finds the interpreter, compiler flags, and libraries
-find_package(Python 3 REQUIRED COMPONENTS Development.Embed)
+# Diz ao CMake para criar um executável chamado "result_plot" a partir de "gui.cpp"
+add_executable(result_plot gui.cpp)
 
-# 5. Find NumPy
-# We use Python itself to find the NumPy header path
-execute_process(
-  COMMAND "${Python_EXECUTABLE}" -c "import numpy; print(numpy.get_include())"
-  OUTPUT_VARIABLE NumPy_INCLUDE_DIRS
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  RESULT_VARIABLE _numpy_result
+# Linka todas as bibliotecas que encontramos com o seu executável
+target_link_libraries(result_plot PRIVATE
+    ${Python_LIBRARIES}  
+    OpenGL::GL           
+    OpenGL::GLU          
+    glfw                 
+    Threads::Threads  
 )
 
-# Fail if NumPy isn't found
-if(NOT _numpy_result EQUAL 0)
-  message(FATAL_ERROR "Failed to find NumPy include directory. Is numpy installed? (pip install numpy)")
-endif()
-
-# --- Configure the Executable ---
-
-# Add the main C++ file as the executable
-add_executable(galaxy_sim gui.cpp)
-
-# Add all the include directories
-target_include_directories(galaxy_sim PRIVATE
-  "${CMAKE_CURRENT_SOURCE_DIR}"  # Lets it find matplotlibcpp.h, primitivas.h
-  "${OpenGL_INCLUDE_DIR}"
-  "${GLU_INCLUDE_DIR}"
-  "${glfw3_INCLUDE_DIRS}"
-  "${Python_INCLUDE_DIRS}"
-  "${NumPy_INCLUDE_DIRS}"
-)
-
-# Link all the libraries
-target_link_libraries(galaxy_sim PRIVATE
-  OpenMP::OpenMP_CXX  # Link OpenMP
-  OpenGL::GL          # Link OpenGL
-  GLU::GLU            # Link GLU
-  glfw                # Link GLFW
-  Python::Python      # Link Python
+# Adiciona os diretórios de include necessários
+target_include_directories(result_plot PRIVATE
+    ${Python_INCLUDE_DIRS}
+    ${NUMPY_INCLUDE_DIR}
 )
