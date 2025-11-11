@@ -10,7 +10,12 @@ const float kg = mSol / 1.89e30;
 const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 1e9*AL;
 
-const float dt = 80e6*milenio;
+const int n = 15000;
+const float massa = 1e12/n*mSol;
+float cores_corpos[n][3];
+float espacamento = 110e3*AL;
+
+const float dt = 8e6*milenio;
 
 struct vec3 {
     float x, y, z;
@@ -90,7 +95,20 @@ void desenhaCubo(float tamanho) {
 
 }
 
-/// Isso é só pra teste
+double rngforpdf(double (*pdf)(double), float rinic, float rfin, int iteracoes){
+  for (int i = 0; i < iteracoes; i++){
+    double rand_x = (rfin - rinic) * rng() + rinic;
+    double rand_y = rng();
+    double calc_y = pdf(rand_x);
+  if (rand_y<=calc_y){
+    return rand_x;}
+  }
+  return -1;
+  }
+
+double dens_r(double r){
+  return exp(r/1);
+}
 
 
 void desenhaPonto(float r,vec3 p,colora cor) {
@@ -136,15 +154,12 @@ struct corpo {
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-const int n = 10800;
-const float massa = 1e12/n*mSol;
 corpo corpos[n];
-float cores_corpos[n][3];
-float espacamento = 110e3*AL;
 void inicializarCorpos() {
     float magnitudev = 1;
     for (int i = 0; i < n; i++) {
-        float raiocorpo = rng() * espacamento; float angulocorpo = rng() * 2 * M_PI;
+        float raiocorpo = rngforpdf(dens_r, 0, 1, 10000)*espacamento;
+        float angulocorpo = rng() * 2 * M_PI;
         //float posx = 2 * (rng() - 0.5) * espacamento; float posy = 2 * (rng() - 0.5) * espacamento; float raiocorpo = sqrt(posx * posx + posy * posy); float angulocorpo = atan2(posy, posx);
         // Atribuição correta, elemento por elemento
         corpos[i].massa = massa;
@@ -157,9 +172,12 @@ void inicializarCorpos() {
 		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
 		corpos[i].exist = true;
         
-        cores_corpos[i][0] = 0.9 + cos(2*angulocorpo) / 2.5; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) / 2.5;
+        cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 1;
     }
+    
 }
+
+
 
 // inicializarCorpos() é executado na main, porque a primitivas.h não pode realizar nenhum laço ou algo do tipo
 
