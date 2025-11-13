@@ -10,7 +10,7 @@ const float kg = mSol / 1.89e30;
 const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 1e9*AL;
 
-const int n = 15000;
+const int n = 25000;
 const float massa = 1e12/n*mSol;
 float cores_corpos[n][3];
 float espacamento = 110e3*AL;
@@ -107,7 +107,7 @@ double rngforpdf(double (*pdf)(double), float rinic, float rfin, int iteracoes){
   }
 
 double dens_r(double r){
-  return exp(r/1);
+  return exp(-r/espacamento);
 }
 
 
@@ -158,7 +158,7 @@ corpo corpos[n];
 void inicializarCorpos() {
     float magnitudev = 1;
     for (int i = 0; i < n; i++) {
-        float raiocorpo = rngforpdf(dens_r, 0, 1, 10000)*espacamento;
+        float raiocorpo = rngforpdf(dens_r, 0, espacamento, 10000);
         float angulocorpo = rng() * 2 * M_PI;
         //float posx = 2 * (rng() - 0.5) * espacamento; float posy = 2 * (rng() - 0.5) * espacamento; float raiocorpo = sqrt(posx * posx + posy * posy); float angulocorpo = atan2(posy, posx);
         // Atribuição correta, elemento por elemento
@@ -172,7 +172,8 @@ void inicializarCorpos() {
 		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
 		corpos[i].exist = true;
         
-        cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 1;
+        cores_corpos[i][0] = 0.8 + 0.2*cos(2*angulocorpo); cores_corpos[i][1] = 0.6;  cores_corpos[i][2] = 0.8 + 0.2*sin(2*angulocorpo);
+        //cores_corpos[i][0] = 0; cores_corpos[i][1] = 0;  cores_corpos[i][2] = 0;
     }
     
 }
@@ -227,7 +228,7 @@ void desenhag() {
     //#pragma omp parallel for
     for (int i = 0; i < n; i++) {
         if (corpos[i].exist == true) {
-            desenhaPonto(1.3, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2]), cores_corpos[i]);
+            desenhaPonto(2, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2]), cores_corpos[i]);
 		}
         vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
 		v1.x = v1.x + corpos[i].acc[0] * dt; v1.y = v1.y + corpos[i].acc[1] * dt; v1.z = v1.z + corpos[i].acc[2] * dt;
@@ -273,3 +274,5 @@ void desenhaOld(float num) {
 
     desenhaPonto(20, vec3(0 , 0, -10 + 4 * sin(num / 10 / M_PI)), amarelo);
 }
+
+//volta completa: 1.6e10 milenios

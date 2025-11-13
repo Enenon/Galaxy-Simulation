@@ -20,7 +20,7 @@
 #include "matplotlibcpp.h"
 
 
-const float intervaloPlot = 60; // <--- minutos
+const float intervaloPlot = 30; // <--- minutos
 int numplots = 0;
 float num = 0.0;
 
@@ -32,7 +32,7 @@ static void plotar() {
 
     std::cout << "Calculando raio x velocidade..." << std::endl;
 
-    const int numDivisoes = 500;
+    const int numDivisoes = 50;
     double velxraio[numDivisoes * 2][2] = { 0 }; // 0 = velocidade, 1 = numero de corpos
     for (int i = 0; i < n; i++) {
         float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
@@ -43,15 +43,18 @@ static void plotar() {
             velxraio[indice][1] = velxraio[indice][1] + 1;
         }
     }
-    std::vector<double> raioPlot, velPlot;
+    std::vector<double> raioPlot, velPlot, massaPlot, massaSamplePlot;
     for (int i = 0; i < numDivisoes; i++) {
         if (velxraio[i][1] > 0) {
             raioPlot.push_back(i * espacamento / numDivisoes);
             velPlot.push_back(velxraio[i][0] / velxraio[i][1]);
+            //massaPlot.push_back(velxraio[i][1]);
+            //massaSamplePlot.push_back(exp(-i / numDivisoes));
         }
     }
     plt::figure_size(800, 500);
     plt::plot(raioPlot, velPlot);
+    //plt::plot(raioPlot, massaPlot); plt::plot(raioPlot, massaSamplePlot);
     plt::grid(true);
     plt::xlabel("Raio(AL)");
     plt::ylabel("Velocidade(AL/milenio)");
@@ -59,8 +62,8 @@ static void plotar() {
 
 int main(void)
 {
-    const int largura = 1920;
-    const int altura = 1080;
+    const int largura = 800;
+    const int altura = 600;
 	
 
     inicializarCorpos();
@@ -81,6 +84,7 @@ int main(void)
 
 
     glClearColor(0.02, 0.02, 0.02, 1.0); // cor do fundo
+    //glClearColor(1, 1, 1, 1.0);
 
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_BLEND);
