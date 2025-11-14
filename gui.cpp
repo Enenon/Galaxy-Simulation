@@ -11,13 +11,14 @@
     #include <GL/glu.h>
 #endif
 #include <iostream>
-#include "cores.h"
+#include "headers/cores.h"
 #include "primitivas.h"
 #include <omp.h> // paralelismo
 #include <cmath>
 #include <map>
 
-#include "matplotlibcpp.h"
+#include "headers/old.cpp"
+#include "headers/matplotlibcpp.h"
 
 
 const float intervaloPlot = 30; // <--- minutos
@@ -32,7 +33,7 @@ static void plotar() {
 
     std::cout << "Calculando raio x velocidade..." << std::endl;
 
-    const int numDivisoes = 50;
+    const int numDivisoes = 100;
     double velxraio[numDivisoes * 2][2] = { 0 }; // 0 = velocidade, 1 = numero de corpos
     for (int i = 0; i < n; i++) {
         float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
@@ -65,9 +66,9 @@ int main(void)
     const int largura = 800;
     const int altura = 600;
 	
-
+	densidadeMassa();
     inicializarCorpos();
-
+    //return 0;
     /* Initialize the library */
     glfwInit();
 

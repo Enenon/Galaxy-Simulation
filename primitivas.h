@@ -1,6 +1,7 @@
 #define M_PI 3.1415926535897932384626433832795
 #pragma warning(disable : n)
 
+
 // unidades de medida
 const double milenio = 1;
 const double AL = 1.0; const float UA = 0.0000158125 * AL;  const float metro = UA / 1.496e11; const float newton = 1.0; const double mSol = 1.0;
@@ -10,7 +11,7 @@ const float kg = mSol / 1.89e30;
 const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e8*AL;
 
-const int n = 15000;
+const int n = 6000;
 const float massa = 1e12 / n * mSol;
 float cores_corpos[n][3];
 float espacamento = 110e3 * AL;
@@ -27,6 +28,7 @@ float rng() {
     return rand() / double(RAND_MAX);
 }
 
+
 void redimensiona(int largura, int altura) {
     glViewport(0, 0, largura, altura);
     glMatrixMode(GL_PROJECTION);
@@ -38,61 +40,14 @@ void redimensiona(int largura, int altura) {
     glMatrixMode(GL_MODELVIEW);
 }
 
-void rect(vec3 p1, vec3 p2, vec3 p3, vec3 p4, color cor) {
-    glColor3fv(cor);
-    glBegin(GL_QUADS);
-    glVertex3fv(&p1.x); // pode trocar por vetor[3] = { p1.x, p1.y, p1.z };
-    glVertex3fv(&p2.x); // de alguma forma, apesar de eu botar apenas as chaves da coordenada x, ele referencia todas as coordenadas
-    glVertex3fv(&p3.x);
-    glVertex3fv(&p4.x);
-    glEnd();
-}
-
-vec3 polarToCartesian(float r, float theta, float phi) {
-    vec3 vetor;
-    vetor.x = r * cos(theta) * sin(phi);
-    vetor.y = r * sin(theta) * sin(phi);
-    vetor.z = r * cos(phi);
-    return vetor;
-}
-
-void desenhaEsfera(double nod, float r) {
-    static float step = M_PI / nod;
-    for (float theta = 0; theta < 2 * M_PI - step; theta = theta + step) {
-        for (float phi = 0; phi < M_PI - step; phi = phi + step) { // talvez tenha que subtrair por M_PI / nod
-            vec3 v1 = polarToCartesian(r, theta, phi);
-            vec3 v2 = polarToCartesian(r, theta + step, phi);
-            vec3 v3 = polarToCartesian(r, theta + step, phi + step);
-            vec3 v4 = polarToCartesian(r, theta, phi + step);
-            color cor = { theta / M_PI,phi / M_PI,1 - theta / M_PI };
-            rect(v1, v2, v3, v4, cor);
-        }
+double integrated_pdf(double (*pdf)(double rl, double r), float rinic, float rfin, float dr) {
+    double soma = 0;
+    int iteracoes = (rfin - rinic) / dr;
+    for (int i = 0; i < iteracoes; i++) {
+        double x = rinic + i * dr;
+        soma += pdf(x, rfin) * dr;
     }
-
-
-    float theta = 0.0;
-    float phi = 0.0;
-}
-
-void desenhaCubo(float tamanho) {
-    float d = tamanho / 2.0;
-    vec3 v1(-d, d, d);
-    vec3 v2(-d, -d, d);
-    vec3 v3(d, -d, d);
-    vec3 v4(d, d, d);
-    vec3 v5(d, d, -d);
-    vec3 v6(d, -d, -d);
-    vec3 v7(-d, -d, -d);
-    vec3 v8(-d, d, -d);
-
-    rect(v1, v2, v3, v4, orchid);
-    rect(v4, v3, v6, v5, azul);
-    rect(v5, v8, v7, v6, darkorchid);
-    rect(v1, v8, v7, v2, blueviolet);
-    rect(v1, v4, v5, v8, slateblue);
-    rect(v2, v7, v6, v3, lilas);
-
-
+    return soma;
 }
 
 double rngforpdf(double (*pdf)(double), float rinic, float rfin, int iteracoes) {
@@ -107,10 +62,18 @@ double rngforpdf(double (*pdf)(double), float rinic, float rfin, int iteracoes) 
     return -1;
 }
 
+const double p0 = 1;
 double dens_r(double r) {
-    return exp(-r / espacamento);
+    return p0*exp(-r / espacamento);
 }
 
+double dens_r_2(double r, double k) {
+	return r * dens_r(r); // tem q ter o r pra considerar a área da casca cilíndrica 2pi*r*dr
+}
+
+double dens_div_r(double rl, double r) {
+    return (rl*dens_r(rl)/(r * r - rl * rl));
+}
 
 void desenhaPonto(float r,vec3 p,colora cor) {
     glColor4fv(cor);
@@ -152,12 +115,17 @@ struct corpo {
     bool exist;
 };
 
+// proximo passo: integrar a função de densidade e comparar com n*massa
+void densidadeMassa() {
+    double massa_total = integrated_pdf(dens_r_2, 0, espacamento, 100) * 2 * M_PI * mSol;
+    std::cout << "Massa total integrada: " << massa_total << " massa total: " << mSol*n << std::endl;
+}
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
 corpo corpos[n];
 
 void inicializarCorpos() {
-    float magnitudev = 1;
+    float magnitudev = 2;
     for (int i = 0; i < n; i++) {
         float raiocorpo = rngforpdf(dens_r, 0, espacamento, 10000);
         float angulocorpo = rng() * 2 * M_PI;
@@ -167,14 +135,17 @@ void inicializarCorpos() {
         corpos[i].pos[0] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
         corpos[i].pos[1] = raiocorpo * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
 		corpos[i].pos[2] = -200 + rng() * 0.01;
-		corpos[i].vel[0] = -sin(angulocorpo) * sqrt(G * massa * n * raiocorpo / pow(espacamento, 2)) * magnitudev;
-		corpos[i].vel[1] = cos(angulocorpo) * sqrt(G * massa * n * raiocorpo / pow(espacamento, 2)) * magnitudev;
+        float velocidade_orbital = (float)sqrt(2 * M_PI * G * raiocorpo * (float)integrated_pdf(dens_div_r, 0, raiocorpo, 100))*magnitudev;
+		//std::cout << "Raio: " << raiocorpo / AL << " AL; Velocidade orbital: " << velocidade_orbital << " AL/milenio" << std::endl;
+		//std::cout << sqrt(G * massa * n * raiocorpo / pow(espacamento, 2)) << std::endl;
+		corpos[i].vel[0] = -sin(angulocorpo) * velocidade_orbital * magnitudev;
+		corpos[i].vel[1] = cos(angulocorpo) * velocidade_orbital * magnitudev;
 		corpos[i].vel[2] = 0;
 		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
 		corpos[i].exist = true;
         
-        //cores_corpos[i][0] = 0.9 + cos(2*angulocorpo) / 2.5; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) / 2.5;
-        cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 1;
+        cores_corpos[i][0] = 0.9 + cos(2*angulocorpo) / 2.5; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) / 2.5;
+        //cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 1;
     }
 }
 
@@ -184,6 +155,8 @@ void inicializarCorpos() {
 // massa, (x,y,z),(vx,vy,vz)
 //vec3 p1(1, 1, -10); vec3 v1(-0.001, 0.001, 0);
 //vec3 p2(-1, -1, -10); vec3 v2(0.002, 0, 0);
+
+
 
 bool leap = 0;
 
@@ -229,7 +202,7 @@ void desenhag() {
     //#pragma omp parallel for
     for (int i = 0; i < n; i++) {
         if (corpos[i].exist == true) {
-            desenhaPonto(2, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2]), cores_corpos[i]);
+            desenhaPonto(1.5, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2]), cores_corpos[i]);
 		}
         vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
 		v1.x = v1.x + corpos[i].acc[0] * dt; v1.y = v1.y + corpos[i].acc[1] * dt; v1.z = v1.z + corpos[i].acc[2] * dt;
