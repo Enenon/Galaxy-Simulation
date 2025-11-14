@@ -8,14 +8,14 @@ const float kg = mSol / 1.89e30;
 //const float G = 0.00005;
 //const float G = 6.67e-11 * newton * metro * metro / kg;
 const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
-const float r_soft = 1e9*AL;
+const float r_soft = 5e8*AL;
 
-const int n = 25000;
-const float massa = 1e12/n*mSol;
+const int n = 15000;
+const float massa = 1e12 / n * mSol;
 float cores_corpos[n][3];
-float espacamento = 110e3*AL;
+float espacamento = 110e3 * AL;
 
-const float dt = 8e6*milenio;
+const float dt = 8e6 * milenio;
 
 struct vec3 {
     float x, y, z;
@@ -95,19 +95,20 @@ void desenhaCubo(float tamanho) {
 
 }
 
-double rngforpdf(double (*pdf)(double), float rinic, float rfin, int iteracoes){
-  for (int i = 0; i < iteracoes; i++){
-    double rand_x = (rfin - rinic) * rng() + rinic;
-    double rand_y = rng();
-    double calc_y = pdf(rand_x);
-  if (rand_y<=calc_y){
-    return rand_x;}
-  }
-  return -1;
-  }
+double rngforpdf(double (*pdf)(double), float rinic, float rfin, int iteracoes) {
+    for (int i = 0; i < iteracoes; i++) {
+        double rand_x = (rfin - rinic) * rng() + rinic;
+        double rand_y = rng();
+        double calc_y = pdf(rand_x);
+        if (rand_y <= calc_y) {
+            return rand_x;
+        }
+    }
+    return -1;
+}
 
-double dens_r(double r){
-  return exp(-r/espacamento);
+double dens_r(double r) {
+    return exp(-r / espacamento);
 }
 
 
@@ -121,8 +122,8 @@ void desenhaPonto(float r,vec3 p,colora cor) {
     glEnd();
 }
 
-float Fgravitacional(float m2, vec3 p1, vec3 p2) {
-    float r2 = pow(p1.x - p2.x,2) + pow(p1.y - p2.y,2) + pow(p1.z - p2.z,2);
+float Fgravitacional(float m2, float r) {
+	double r2 = r * r;
     float F = -G * m2 / (r2 + r_soft);
     return F;
 }
@@ -135,26 +136,26 @@ vec3 velocidade(float F, vec3 v1, vec3 p1, vec3 p2) {
     return v;
 
 }
-vec3 aceleracao(float F, vec3 p1, vec3 p2) {
+vec3 aceleracao(float F, float r, vec3 p1, vec3 p2) {
     float dx, dy, dz; dx = p1.x - p2.x; dy = p1.y - p2.y; dz = p1.z - p2.z;
     //vec3 d(dx, dy, dz);
-    float r = sqrt(dx * dx + dy * dy + dz * dz);
     vec3 a(F * dx / r, F * dy / r, F * dz / r);
     return a;
 
 }
 
 struct corpo {
-    float massa;
-    float pos[3];
-    float vel[3];
-    float acc[3];
+    double massa;
+    double pos[3];
+    double vel[3];
+    double acc[3];
     bool exist;
 };
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
 corpo corpos[n];
+
 void inicializarCorpos() {
     float magnitudev = 1;
     for (int i = 0; i < n; i++) {
@@ -172,13 +173,10 @@ void inicializarCorpos() {
 		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
 		corpos[i].exist = true;
         
-        cores_corpos[i][0] = 0.8 + 0.2*cos(2*angulocorpo); cores_corpos[i][1] = 0.6;  cores_corpos[i][2] = 0.8 + 0.2*sin(2*angulocorpo);
-        //cores_corpos[i][0] = 0; cores_corpos[i][1] = 0;  cores_corpos[i][2] = 0;
+        //cores_corpos[i][0] = 0.9 + cos(2*angulocorpo) / 2.5; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) / 2.5;
+        cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 1;
     }
-    
 }
-
-
 
 // inicializarCorpos() é executado na main, porque a primitivas.h não pode realizar nenhum laço ou algo do tipo
 
@@ -205,8 +203,9 @@ void desenhag() {
             if (i != j && corpos[i].exist == true && corpos[j].exist == true) {
 				vec3 p2(corpos[j].pos[0], corpos[j].pos[1], corpos[j].pos[2]);
 				vec3 v2(corpos[j].vel[0], corpos[j].vel[1], corpos[j].vel[2]);
-                float a = Fgravitacional(corpos[j].massa, p1, p2);
-                a1 = aceleracao(a, p1, p2); // cálculos mostraram que implementar direto na velocidade dá no mesmo q na aceleração
+				double r = sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2) + pow(p1.z - p2.z, 2));
+                double a = Fgravitacional(corpos[j].massa, r);
+                a1 = aceleracao(a, r, p1, p2); // cálculos mostraram que implementar direto na velocidade dá no mesmo q na aceleração
 				corpos[i].acc[0] = corpos[i].acc[0] + a1.x; corpos[i].acc[1] = corpos[i].acc[1] + a1.y; corpos[i].acc[2] = corpos[i].acc[2] + a1.z;
 				
                 //v1 = velocidade(F, v1, p1, p2);
@@ -220,6 +219,8 @@ void desenhag() {
                 
         }}
         glLoadIdentity();
+		//gluLookAt(0.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
         
         //for (int k = 0; k < 3; k++) {
         //    momento[k] = momento[k] + corpos[i][0] * corpos[i][k + 4];
@@ -275,4 +276,4 @@ void desenhaOld(float num) {
     desenhaPonto(20, vec3(0 , 0, -10 + 4 * sin(num / 10 / M_PI)), amarelo);
 }
 
-//volta completa: 1.6e10 milenios
+//volta completa: 1.6e10 milenios; dt: 8e6 milenios; passos por volta: 2000
