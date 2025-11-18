@@ -11,7 +11,7 @@ const float kg = mSol / 1.89e30;
 const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e8*AL;
 
-const int n = 6000;
+const int n = 1000;
 const float massa = 1e12 / n * mSol;
 float cores_corpos[n][3];
 float espacamento = 110e3 * AL;
@@ -115,14 +115,43 @@ struct corpo {
     bool exist;
 };
 
+// orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
+corpo corpos[n];
+
+void atualizaForca(corpo(&corpos)[n]) {
+    for (int i = 0; i < n; i++) { // i é o que sofre a força
+        vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
+        vec3 a1(0, 0, 0);
+        corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
+        //#pragma omp parallel for
+        for (int j = 0; j < n; j++) {
+            if (i != j && corpos[i].exist == true && corpos[j].exist == true) {
+                vec3 p2(corpos[j].pos[0], corpos[j].pos[1], corpos[j].pos[2]);
+                vec3 v2(corpos[j].vel[0], corpos[j].vel[1], corpos[j].vel[2]);
+                double r = sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2) + pow(p1.z - p2.z, 2));
+                double a = Fgravitacional(corpos[j].massa, r);
+                a1 = aceleracao(a, r, p1, p2); // cálculos mostraram que implementar direto na velocidade dá no mesmo q na aceleração
+                corpos[i].acc[0] = corpos[i].acc[0] + a1.x; corpos[i].acc[1] = corpos[i].acc[1] + a1.y; corpos[i].acc[2] = corpos[i].acc[2] + a1.z;
+            }
+        }
+    }
+}
+void achaVelocidadeRadial(corpo(&corpos)[n]) {
+    for (int i = 0; i < n; i++) {
+        float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
+		float aceleracao_radial = sqrt(corpos[i].acc[0] * corpos[i].acc[0] + corpos[i].acc[1] * corpos[i].acc[1]);
+		float velocidade_orbital = sqrt(aceleracao_radial * raio);
+		corpos[i].vel[0] = -corpos[i].pos[1] / raio * velocidade_orbital;
+		corpos[i].vel[1] = corpos[i].pos[0] / raio * velocidade_orbital;
+    }
+}
 // proximo passo: integrar a função de densidade e comparar com n*massa
 void densidadeMassa() {
     double massa_total = integrated_pdf(dens_r_2, 0, espacamento, 100) * 2 * M_PI * mSol;
     std::cout << "Massa total integrada: " << massa_total << " massa total: " << mSol*n << std::endl;
 }
 
-// orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-corpo corpos[n];
+
 
 void inicializarCorpos() {
     float magnitudev = 2;
@@ -134,12 +163,13 @@ void inicializarCorpos() {
         corpos[i].massa = massa;
         corpos[i].pos[0] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
         corpos[i].pos[1] = raiocorpo * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
-		corpos[i].pos[2] = -200 + rng() * 0.01;
-        float velocidade_orbital = (float)sqrt(2 * M_PI * G * raiocorpo * (float)integrated_pdf(dens_div_r, 0, raiocorpo, 100))*magnitudev;
+        corpos[i].pos[2] = (rng() - 0.5) * 4;
+        //float velocidade_orbital = (float)sqrt(2 * M_PI * G * raiocorpo * (float)integrated_pdf(dens_div_r, 0, raiocorpo, 100))*magnitudev;
 		//std::cout << "Raio: " << raiocorpo / AL << " AL; Velocidade orbital: " << velocidade_orbital << " AL/milenio" << std::endl;
 		//std::cout << sqrt(G * massa * n * raiocorpo / pow(espacamento, 2)) << std::endl;
-		corpos[i].vel[0] = -sin(angulocorpo) * velocidade_orbital * magnitudev;
-		corpos[i].vel[1] = cos(angulocorpo) * velocidade_orbital * magnitudev;
+		
+		//corpos[i].vel[0] = -sin(angulocorpo) * velocidade_orbital * magnitudev;
+		//corpos[i].vel[1] = cos(angulocorpo) * velocidade_orbital * magnitudev;
 		corpos[i].vel[2] = 0;
 		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
 		corpos[i].exist = true;
@@ -147,6 +177,9 @@ void inicializarCorpos() {
         cores_corpos[i][0] = 0.9 + cos(2*angulocorpo) / 2.5; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) / 2.5;
         //cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 1;
     }
+    atualizaForca(corpos);
+    std::cout << "Aceleracao: " << corpos[0].acc[0] << corpos[0].acc[1] << std::endl;
+    achaVelocidadeRadial(corpos);
 }
 
 // inicializarCorpos() é executado na main, porque a primitivas.h não pode realizar nenhum laço ou algo do tipo
@@ -191,7 +224,7 @@ void desenhag() {
                 
                 
         }}
-        glLoadIdentity();
+        //glLoadIdentity();
 		//gluLookAt(0.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
         
@@ -202,7 +235,9 @@ void desenhag() {
     //#pragma omp parallel for
     for (int i = 0; i < n; i++) {
         if (corpos[i].exist == true) {
-            desenhaPonto(1.5, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2]), cores_corpos[i]);
+            //
+			
+            desenhaPonto(1.5, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2] ), cores_corpos[i]);
 		}
         vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
 		v1.x = v1.x + corpos[i].acc[0] * dt; v1.y = v1.y + corpos[i].acc[1] * dt; v1.z = v1.z + corpos[i].acc[2] * dt;

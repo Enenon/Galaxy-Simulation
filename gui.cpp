@@ -61,6 +61,7 @@ static void plotar() {
     plt::ylabel("Velocidade(AL/milenio)");
 }
 
+
 int main(void)
 {
     const int largura = 800;
@@ -69,9 +70,10 @@ int main(void)
 	densidadeMassa();
     inicializarCorpos();
     //return 0;
+    //return 0;
     /* Initialize the library */
     glfwInit();
-
+    
     /* Create a windowed mode window and its OpenGL context */
     GLFWwindow* window = glfwCreateWindow(largura, altura, "Salve", NULL, NULL);
     if (!window)
@@ -90,6 +92,8 @@ int main(void)
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // <---- ative essa linha se quiser habilitar transparência
+    glLoadIdentity();
+    gluLookAt(0, 0, 200, 0, 0, 0, 0, 1, 0); // <---- câmera fixa
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -117,10 +121,19 @@ int main(void)
             glfwSetWindowShouldClose(window, GLFW_TRUE);
         }
         else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            glLoadIdentity();
-			glTranslatef(100.0, 0.0, 1.0);
-            glRotated(1.0, 1.0, 0.0, 0.0);
+            //glLoadIdentity();
+			// Para girar 90 graus em torno do eixo X use:
+            glRotated(1, 1.0, 0.0, 0.0);
+			// Alternativa (versão float):
+			// glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
 		}
+        else if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) {
+            glLoadIdentity(); gluLookAt(0, 0, 200, 0, 0, 0, 0, 1, 0);
+        }
+        else if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+            glLoadIdentity(); gluLookAt(0, 0, 200, 0, 0, 0, 0, 1, 0);
+            glRotated(90, 1.0, 0.0, 0.0);
+        }
 
         if (glfwGetTime() / 60 > numplots * intervaloPlot) {
 			
