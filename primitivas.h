@@ -11,12 +11,12 @@ const float kg = mSol / 1.89e30;
 const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e8*AL;
 
-const int n = 1000;
+const int n = 30000;
 const float massa = 1e12 / n * mSol;
 float cores_corpos[n][3];
 float espacamento = 110e3 * AL;
 
-const float dt = 8e6 * milenio;
+const float dt = 3e5 * milenio;
 
 struct vec3 {
     float x, y, z;
@@ -119,6 +119,7 @@ struct corpo {
 corpo corpos[n];
 
 void atualizaForca(corpo(&corpos)[n]) {
+    #pragma omp parallel for
     for (int i = 0; i < n; i++) { // i é o que sofre a força
         vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
         vec3 a1(0, 0, 0);
@@ -137,6 +138,7 @@ void atualizaForca(corpo(&corpos)[n]) {
     }
 }
 void achaVelocidadeRadial(corpo(&corpos)[n]) {
+    #pragma omp parallel for
     for (int i = 0; i < n; i++) {
         float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
 		float aceleracao_radial = sqrt(corpos[i].acc[0] * corpos[i].acc[0] + corpos[i].acc[1] * corpos[i].acc[1]);
@@ -174,7 +176,7 @@ void inicializarCorpos() {
 		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
 		corpos[i].exist = true;
         
-        cores_corpos[i][0] = 0.9 + cos(2*angulocorpo) / 2.5; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) / 2.5;
+        cores_corpos[i][0] = 0.95 + cos(2*angulocorpo) * 0.2; cores_corpos[i][1] = 0.82;  cores_corpos[i][2] = 0.95 + sin(2 * angulocorpo) * 0.2;
         //cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 1;
     }
     atualizaForca(corpos);
@@ -198,7 +200,6 @@ void desenhag() {
     float m1, m2;
     m1 = 1; m2 = 0.7;
     float momento[3] = { 0,0,0 };
-    
     #pragma omp parallel for
     for (int i = 0;i < n;i++) { // i é o que sofre a força
         vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
@@ -232,15 +233,15 @@ void desenhag() {
         //    momento[k] = momento[k] + corpos[i][0] * corpos[i][k + 4];
         //}
     }
-    //#pragma omp parallel for
+
     for (int i = 0; i < n; i++) {
-        if (corpos[i].exist == true) {
-            //
-			
+        if (corpos[i].exist == true) {	
             desenhaPonto(1.5, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2] ), cores_corpos[i]);
-		}
+		}}
+    #pragma omp parallel for
+    for (int i = 0; i < n; i++) {
         vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
-		v1.x = v1.x + corpos[i].acc[0] * dt; v1.y = v1.y + corpos[i].acc[1] * dt; v1.z = v1.z + corpos[i].acc[2] * dt;
+	v1.x = v1.x + corpos[i].acc[0] * dt; v1.y = v1.y + corpos[i].acc[1] * dt; v1.z = v1.z + corpos[i].acc[2] * dt;
         p1.x = p1.x + v1.x*dt; p1.y = p1.y + v1.y*dt; p1.z = p1.z + v1.z*dt;
         corpos[i].vel[0] = v1.x; corpos[i].vel[1] = v1.y; corpos[i].vel[2] = v1.z;
         corpos[i].pos[0] = p1.x; corpos[i].pos[1] = p1.y; corpos[i].pos[2] = p1.z;
