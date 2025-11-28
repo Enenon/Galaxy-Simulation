@@ -11,12 +11,14 @@ const float kg = mSol / 1.89e30;
 const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e8*AL;
 
-const int n = 30000;
+const int n = 10000;
 const float massa = 1e12 / n * mSol;
 float cores_corpos[n][3];
 float espacamento = 110e3 * AL;
 
-const float dt = 3e5 * milenio;
+const float dt = 8e6 * milenio;
+
+bool ignora_corpos_externos = true; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
 
 struct vec3 {
     float x, y, z;
@@ -62,7 +64,7 @@ double rngforpdf(double (*pdf)(double), float rinic, float rfin, int iteracoes) 
     return -1;
 }
 
-const double p0 = 1;
+double p0 = 1;
 double dens_r(double r) {
     return p0*exp(-r / espacamento);
 }
@@ -110,6 +112,7 @@ vec3 aceleracao(float F, float r, vec3 p1, vec3 p2) {
 struct corpo {
     double massa;
     double pos[3];
+    double raioInicial;
     double vel[3];
     double acc[3];
     bool exist;
@@ -118,7 +121,7 @@ struct corpo {
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
 corpo corpos[n];
 
-void atualizaForca(corpo(&corpos)[n]) {
+void atualizaForcaInicial(corpo(&corpos)[n]) {
     #pragma omp parallel for
     for (int i = 0; i < n; i++) { // i é o que sofre a força
         vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
@@ -126,7 +129,13 @@ void atualizaForca(corpo(&corpos)[n]) {
         corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
         //#pragma omp parallel for
         for (int j = 0; j < n; j++) {
-            if (i != j && corpos[i].exist == true && corpos[j].exist == true) {
+			bool aceitar_forca = true;
+            if (ignora_corpos_externos) {
+                if (corpos[i].raioInicial < corpos[j].raioInicial) {
+					aceitar_forca = false;
+                }
+            }
+            if (i != j && corpos[i].exist == true && corpos[j].exist == true && aceitar_forca == true) {
                 vec3 p2(corpos[j].pos[0], corpos[j].pos[1], corpos[j].pos[2]);
                 vec3 v2(corpos[j].vel[0], corpos[j].vel[1], corpos[j].vel[2]);
                 double r = sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2) + pow(p1.z - p2.z, 2));
@@ -157,11 +166,18 @@ void densidadeMassa() {
 
 void inicializarCorpos() {
     float magnitudev = 2;
+    const double p0 = 1 / ((1 - (1 / exp(1))));
+	std::cout << "p0: " << p0 << std::endl;
+
     for (int i = 0; i < n; i++) {
-        float raiocorpo = rngforpdf(dens_r, 0, espacamento, 10000);
+        //float raiocorpo = rngforpdf(dens_r, 0, espacamento, 10000);
+		float raiocorpo = - espacamento * ( log(1 - rng()/p0) ); // inversa da CDF
+		//std::cout << "Raio corpo " << i << ": " << raiocorpo / AL << " AL" << std::endl;
+		//float raiocorpo = rng() * espacamento;
         float angulocorpo = rng() * 2 * M_PI;
         //float posx = 2 * (rng() - 0.5) * espacamento; float posy = 2 * (rng() - 0.5) * espacamento; float raiocorpo = sqrt(posx * posx + posy * posy); float angulocorpo = atan2(posy, posx);
         // Atribuição correta, elemento por elemento
+		corpos[i].raioInicial = raiocorpo;
         corpos[i].massa = massa;
         corpos[i].pos[0] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
         corpos[i].pos[1] = raiocorpo * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
@@ -179,7 +195,7 @@ void inicializarCorpos() {
         cores_corpos[i][0] = 0.95 + cos(2*angulocorpo) * 0.2; cores_corpos[i][1] = 0.82;  cores_corpos[i][2] = 0.95 + sin(2 * angulocorpo) * 0.2;
         //cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 1;
     }
-    atualizaForca(corpos);
+    atualizaForcaInicial(corpos);
     std::cout << "Aceleracao: " << corpos[0].acc[0] << corpos[0].acc[1] << std::endl;
     achaVelocidadeRadial(corpos);
 }

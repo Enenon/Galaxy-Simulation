@@ -21,7 +21,7 @@
 #include "headers/matplotlibcpp.h"
 
 
-const float intervaloPlot = 30; // <--- minutos
+const float intervaloPlot = 1; // <--- minutos
 int numplots = 0;
 float num = 0.0;
 
