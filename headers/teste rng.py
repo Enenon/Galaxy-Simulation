@@ -20,6 +20,13 @@ def p(r):
 def pr(r,rd):
      return np.exp(-r/rd)
 
+def pbojo(r):
+     return 1/(2*np.pi*r*(r+1)**3)
+
+def pbojo_inv():
+    p = random()
+    return np.sqrt(p)/(1-np.sqrt(p))
+
 p0 = calc_p0(rd)
 
 print(calc_p0(rd),calc_p0(1))

@@ -33,19 +33,21 @@ static void plotar() {
 
     std::cout << "Calculando raio x velocidade..." << std::endl;
 
+	const float raioMaximoPlot = 1.5; // até quantos raios eu quero plotar
     const int numDivisoes = 100;
-    double velxraio[numDivisoes * 2][2] = { 0 }; // 0 = velocidade, 1 = numero de corpos
+	const int numTotalDivisoes = numDivisoes * raioMaximoPlot;
+    double velxraio[numTotalDivisoes][2] = { 0 }; // 0 = velocidade, 1 = numero de corpos
     for (int i = 0; i < n; i++) {
         float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
-        float vel = sqrt(corpos[i].vel[0] * corpos[i].vel[0] + corpos[i].vel[1] * corpos[i].vel[1]);
+        float vel = sqrt(corpos[i].vel[0] * corpos[i].vel[0] + corpos[i].vel[1] * corpos[i].vel[1] + corpos[i].vel[2] * corpos[i].vel[2]);
         int indice = (int)(raio / espacamento * numDivisoes);
-        if (indice < numDivisoes * 2) {
+        if (indice < numTotalDivisoes) {
             velxraio[indice][0] = velxraio[indice][0] + vel;
             velxraio[indice][1] = velxraio[indice][1] + 1;
         }
     }
     std::vector<double> raioPlot, velPlot, massaPlot, massaSamplePlot;
-    for (int i = 0; i < numDivisoes; i++) {
+    for (int i = 0; i < numTotalDivisoes; i++) {
         if (velxraio[i][1] > 0) {
             raioPlot.push_back(i * espacamento / numDivisoes);
             velPlot.push_back(velxraio[i][0] / velxraio[i][1]);
@@ -53,9 +55,23 @@ static void plotar() {
             //massaSamplePlot.push_back(exp(-i / numDivisoes));
         }
     }
-    plt::figure_size(800, 500);
-    plt::plot(raioPlot, velPlot);
+
+	std::vector<double> velSuavizada = suavizar(velPlot, 3);
+    std::vector<double> raioSuavizado = suavizar(raioPlot, 3);
+
+
+    plt::figure_size(1000, 500);
+    plt::plot(raioPlot, velPlot, {
+    { "label", "valores" },
+    { "color", "black" },
+    { "linestyle", "" },
+    { "marker", "." },
+    { "markersize", "3" } });
+
+    plt::plot(raioSuavizado, velSuavizada, {{"label","curva suavizada"}});
+
     //plt::plot(raioPlot, massaPlot); plt::plot(raioPlot, massaSamplePlot);
+	plt::legend();
     plt::grid(true);
     plt::xlabel("Raio(AL)");
     plt::ylabel("Velocidade(AL/milenio)");

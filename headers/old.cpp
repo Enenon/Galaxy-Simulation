@@ -54,3 +54,19 @@ void desenhaCubo(float tamanho) {
 
 
 }
+
+std::vector<double> suavizar(const std::vector<double>& data, int windowSize) {
+    if (data.empty() || windowSize <= 0) return {};
+
+    std::vector<double> smoothed;
+    int n = data.size();
+
+    for (int i = 0; i <= n - windowSize; ++i) {
+        double sum = 0.0;
+        for (int j = 0; j < windowSize; ++j) {
+            sum += data[i + j];
+        }
+        smoothed.push_back(sum / windowSize);
+    }
+    return smoothed;
+}

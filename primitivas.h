@@ -11,14 +11,21 @@ const float kg = mSol / 1.89e30;
 const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e8*AL;
 
-const int n = 10000;
+const int n = 5000;
+int nBojo = n/3;
+int nDisco = n - nBojo;
+//int nHalo = n - nBojo - nDisco;
+
 const float massa = 1e12 / n * mSol;
 float cores_corpos[n][3];
 float espacamento = 110e3 * AL;
+float espessura = 5e3 * AL;
 
 const float dt = 8e6 * milenio;
 
 bool ignora_corpos_externos = true; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
+
+enum class tipo { bojo, disco, halo };
 
 struct vec3 {
     float x, y, z;
@@ -77,6 +84,13 @@ double dens_div_r(double rl, double r) {
     return (rl*dens_r(rl)/(r * r - rl * rl));
 }
 
+double inversa_bojo() {
+    float p = rng();
+	float sqrtp = sqrt(p);
+	return sqrtp / (1 - sqrtp);
+}
+
+
 void desenhaPonto(float r,vec3 p,colora cor) {
     glColor4fv(cor);
     glPointSize(r);
@@ -115,6 +129,7 @@ struct corpo {
     double raioInicial;
     double vel[3];
     double acc[3];
+	tipo tipoCorpo;
     bool exist;
 };
 
@@ -163,41 +178,68 @@ void densidadeMassa() {
 }
 
 
-
+using namespace std;
 void inicializarCorpos() {
     float magnitudev = 2;
     const double p0 = 1 / ((1 - (1 / exp(1))));
+	const double p0z = 1 / ((1 - (1 / exp(1))));
 	std::cout << "p0: " << p0 << std::endl;
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < nBojo; i++) {
+        float raiocorpo = espacamento * inversa_bojo() / 100;
+        corpos[i].raioInicial = raiocorpo;
+        float angulocorpo = rng() * 2 * M_PI;
+        float angulocorpo1 = rng() * M_PI;
+
+        corpos[i].pos[0] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
+        corpos[i].pos[1] = raiocorpo * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
+        corpos[i].pos[2] = raiocorpo * cos(angulocorpo1);
+        //corpos[i].pos[2] = -espessura * (log(1 - rng() / p0z));
+        corpos[i].massa = massa;
+
+        corpos[i].vel[2] = 0;
+        corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
+
+		corpos[i].tipoCorpo = tipo::bojo;
+        cores_corpos[i][0] = 0.6 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0.9;  cores_corpos[i][2] = 0.8 + sin(2 * angulocorpo) * 0.2;
+    }
+
+    for (int i = nBojo; i < nBojo+nDisco; i++) {
         //float raiocorpo = rngforpdf(dens_r, 0, espacamento, 10000);
-		float raiocorpo = - espacamento * ( log(1 - rng()/p0) ); // inversa da CDF
-		//std::cout << "Raio corpo " << i << ": " << raiocorpo / AL << " AL" << std::endl;
-		//float raiocorpo = rng() * espacamento;
+        float raiocorpo = -espacamento * (log(1 - rng() / p0)); // inversa da CDF
+        float posz = -espessura * (log(1 - rng() / p0z)); // inversa da CDF
+        posz = 2 * (posz - espessura / 2);
         float angulocorpo = rng() * 2 * M_PI;
         //float posx = 2 * (rng() - 0.5) * espacamento; float posy = 2 * (rng() - 0.5) * espacamento; float raiocorpo = sqrt(posx * posx + posy * posy); float angulocorpo = atan2(posy, posx);
         // Atribuição correta, elemento por elemento
-		corpos[i].raioInicial = raiocorpo;
-        corpos[i].massa = massa;
+        corpos[i].raioInicial = raiocorpo;
         corpos[i].pos[0] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
         corpos[i].pos[1] = raiocorpo * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
-        corpos[i].pos[2] = (rng() - 0.5) * 4;
-        //float velocidade_orbital = (float)sqrt(2 * M_PI * G * raiocorpo * (float)integrated_pdf(dens_div_r, 0, raiocorpo, 100))*magnitudev;
-		//std::cout << "Raio: " << raiocorpo / AL << " AL; Velocidade orbital: " << velocidade_orbital << " AL/milenio" << std::endl;
-		//std::cout << sqrt(G * massa * n * raiocorpo / pow(espacamento, 2)) << std::endl;
-		
-		//corpos[i].vel[0] = -sin(angulocorpo) * velocidade_orbital * magnitudev;
-		//corpos[i].vel[1] = cos(angulocorpo) * velocidade_orbital * magnitudev;
-		corpos[i].vel[2] = 0;
-		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
-		corpos[i].exist = true;
-        
-        cores_corpos[i][0] = 0.95 + cos(2*angulocorpo) * 0.2; cores_corpos[i][1] = 0.82;  cores_corpos[i][2] = 0.95 + sin(2 * angulocorpo) * 0.2;
+        corpos[i].pos[2] = posz;
+        corpos[i].massa = massa;
+
+        corpos[i].vel[2] = 0;
+        corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
+
+		corpos[i].tipoCorpo = tipo::disco;
+        cores_corpos[i][0] = 0.95 + cos(2 * angulocorpo) * 0.2; cores_corpos[i][1] = 0.82;  cores_corpos[i][2] = 0.8 + sin(2 * angulocorpo) * 0.1;
         //cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 1;
     }
+#pragma omp parallel for
+    for (int i = 0; i < n; i++) {
+        corpos[i].vel[2] = 0;
+        corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
+        corpos[i].exist = true;
+        //cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 1;
+    }
+    for (int i = 0; i < n; i++) {
+        //cout << "Corpo " << i << " " << corpos[i].pos[0] << " " << corpos[i].vel[2] << endl;
+    }
+
     atualizaForcaInicial(corpos);
     std::cout << "Aceleracao: " << corpos[0].acc[0] << corpos[0].acc[1] << std::endl;
     achaVelocidadeRadial(corpos);
+
 }
 
 // inicializarCorpos() é executado na main, porque a primitivas.h não pode realizar nenhum laço ou algo do tipo
@@ -212,6 +254,7 @@ void inicializarCorpos() {
 bool leap = 0;
 
 void desenhag() {
+	
 	using namespace std;
     float m1, m2;
     m1 = 1; m2 = 0.7;
@@ -223,6 +266,7 @@ void desenhag() {
 		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
         //#pragma omp parallel for
         for (int j = 0; j < n; j++) {
+            
             if (i != j && corpos[i].exist == true && corpos[j].exist == true) {
 				vec3 p2(corpos[j].pos[0], corpos[j].pos[1], corpos[j].pos[2]);
 				vec3 v2(corpos[j].vel[0], corpos[j].vel[1], corpos[j].vel[2]);
@@ -252,7 +296,7 @@ void desenhag() {
 
     for (int i = 0; i < n; i++) {
         if (corpos[i].exist == true) {	
-            desenhaPonto(1.5, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2] ), cores_corpos[i]);
+            desenhaPonto(1.5, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2] * 80 / espacamento ), cores_corpos[i]);
 		}}
     #pragma omp parallel for
     for (int i = 0; i < n; i++) {
