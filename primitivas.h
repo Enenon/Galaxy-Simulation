@@ -11,8 +11,8 @@ const float kg = mSol / 1.89e30;
 const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e8*AL;
 
-const int n = 5000;
-int nBojo = n/3;
+const int n = 15000;
+int nBojo = n/2;
 int nDisco = n - nBojo;
 //int nHalo = n - nBojo - nDisco;
 
@@ -189,11 +189,11 @@ void inicializarCorpos() {
         float raiocorpo = espacamento * inversa_bojo() / 100;
         corpos[i].raioInicial = raiocorpo;
         float angulocorpo = rng() * 2 * M_PI;
-        float angulocorpo1 = rng() * M_PI;
+        float angulocorpo1 = (rng() - 0.5) * 2 * M_PI;
 
-        corpos[i].pos[0] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
-        corpos[i].pos[1] = raiocorpo * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
-        corpos[i].pos[2] = raiocorpo * cos(angulocorpo1);
+        corpos[i].pos[0] = raiocorpo * cos(angulocorpo) * cos(angulocorpo1); // rng() * espacamento_x - espacamento_x/2;
+        corpos[i].pos[1] = raiocorpo * sin(angulocorpo) * cos(angulocorpo1);// rng()* espacamento_y - espacamento_y / 2;
+        corpos[i].pos[2] = raiocorpo * sin(angulocorpo1);
         //corpos[i].pos[2] = -espessura * (log(1 - rng() / p0z));
         corpos[i].massa = massa;
 
@@ -201,7 +201,7 @@ void inicializarCorpos() {
         corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
 
 		corpos[i].tipoCorpo = tipo::bojo;
-        cores_corpos[i][0] = 0.6 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0.9;  cores_corpos[i][2] = 0.8 + sin(2 * angulocorpo) * 0.2;
+        cores_corpos[i][0] = 0.8 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.8 + sin(2 * angulocorpo) * 0.2;
     }
 
     for (int i = nBojo; i < nBojo+nDisco; i++) {
@@ -222,7 +222,7 @@ void inicializarCorpos() {
         corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
 
 		corpos[i].tipoCorpo = tipo::disco;
-        cores_corpos[i][0] = 0.95 + cos(2 * angulocorpo) * 0.2; cores_corpos[i][1] = 0.82;  cores_corpos[i][2] = 0.8 + sin(2 * angulocorpo) * 0.1;
+        cores_corpos[i][0] = 0.75 + cos(2 * angulocorpo)*0.1; cores_corpos[i][1] = 0.7;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) * 0.05 - 0.3 * raiocorpo / espacamento;
         //cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 1;
     }
 #pragma omp parallel for

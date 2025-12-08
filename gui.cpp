@@ -39,7 +39,7 @@ static void plotar() {
     double velxraio[numTotalDivisoes][2] = { 0 }; // 0 = velocidade, 1 = numero de corpos
     for (int i = 0; i < n; i++) {
         float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
-        float vel = sqrt(corpos[i].vel[0] * corpos[i].vel[0] + corpos[i].vel[1] * corpos[i].vel[1] + corpos[i].vel[2] * corpos[i].vel[2]);
+        float vel = sqrt(corpos[i].vel[0] * corpos[i].vel[0] + corpos[i].vel[1] * corpos[i].vel[1]);
         int indice = (int)(raio / espacamento * numDivisoes);
         if (indice < numTotalDivisoes) {
             velxraio[indice][0] = velxraio[indice][0] + vel;
