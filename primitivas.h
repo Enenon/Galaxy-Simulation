@@ -11,19 +11,19 @@ const float kg = mSol / 1.89e30;
 const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e8*AL;
 
-const int n = 15000;
-int nBojo = n/2;
+const int n = 10000;
+int nBojo = 3*n/4;
 int nDisco = n - nBojo;
 //int nHalo = n - nBojo - nDisco;
 
 const float massa = 1e12 / n * mSol;
 float cores_corpos[n][3];
 float espacamento = 110e3 * AL;
-float espessura = 5e3 * AL;
+float espessura = 3e3 * AL;
 
-const float dt = 8e6 * milenio;
+const float dt = 3e7 * milenio;
 
-bool ignora_corpos_externos = true; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
+bool ignora_corpos_externos = false; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
 
 enum class tipo { bojo, disco, halo };
 
@@ -186,10 +186,10 @@ void inicializarCorpos() {
 	std::cout << "p0: " << p0 << std::endl;
 
     for (int i = 0; i < nBojo; i++) {
-        float raiocorpo = espacamento * inversa_bojo() / 100;
+        float raiocorpo = espacamento * inversa_bojo() / 200;
         corpos[i].raioInicial = raiocorpo;
         float angulocorpo = rng() * 2 * M_PI;
-        float angulocorpo1 = (rng() - 0.5) * 2 * M_PI;
+        float angulocorpo1 = (rng() - 0.5) * M_PI;
 
         corpos[i].pos[0] = raiocorpo * cos(angulocorpo) * cos(angulocorpo1); // rng() * espacamento_x - espacamento_x/2;
         corpos[i].pos[1] = raiocorpo * sin(angulocorpo) * cos(angulocorpo1);// rng()* espacamento_y - espacamento_y / 2;
@@ -210,7 +210,7 @@ void inicializarCorpos() {
         float posz = -espessura * (log(1 - rng() / p0z)); // inversa da CDF
         posz = 2 * (posz - espessura / 2);
         float angulocorpo = rng() * 2 * M_PI;
-        //float posx = 2 * (rng() - 0.5) * espacamento; float posy = 2 * (rng() - 0.5) * espacamento; float raiocorpo = sqrt(posx * posx + posy * posy); float angulocorpo = atan2(posy, posx);
+        //floaGt posx = 2 * (rng() - 0.5) * espacamento; float posy = 2 * (rng() - 0.5) * espacamento; float raiocorpo = sqrt(posx * posx + posy * posy); float angulocorpo = atan2(posy, posx);
         // Atribuição correta, elemento por elemento
         corpos[i].raioInicial = raiocorpo;
         corpos[i].pos[0] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;

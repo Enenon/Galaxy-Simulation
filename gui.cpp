@@ -21,7 +21,7 @@
 #include "headers/matplotlibcpp.h"
 
 
-const float intervaloPlot = 1; // <--- minutos
+const float intervaloPlot = 5; // <--- minutos
 int numplots = 0;
 float num = 0.0;
 
@@ -75,6 +75,26 @@ static void plotar() {
     plt::grid(true);
     plt::xlabel("Raio(AL)");
     plt::ylabel("Velocidade(AL/milenio)");
+}
+
+static void plotar_corpos() {
+    std::cout << "Plotando corpos..." << std::endl;
+    std::vector<double> x, y, z;
+    for (int i = 0; i < n; i++) {
+        x.push_back(corpos[i].pos[0]);
+        y.push_back(corpos[i].pos[1]);
+        z.push_back(corpos[i].pos[2]);
+    }
+    plt::figure_size(800, 800);
+    //plt::scatter3(x, y, z, 1.0);
+	//plt::subplot(1, 1, 1);
+    plt::scatter(x, y, 1.0);
+    plt::xlabel("X (AL)");
+    plt::ylabel("Y (AL)");
+    //plt::set_zlabel("Z (AL)");
+	plt::xlim(-espacamento * 1.5, espacamento * 1.5);
+	plt::ylim(-espacamento * 1.5, espacamento * 1.5);
+    std::cout << "Gráfico salvo como distribuicao_corpos.png" << std::endl;
 }
 
 
@@ -156,6 +176,9 @@ int main(void)
 			plotar();
             plt::title("Velocidade x Raio apos " + std::to_string(numplots*intervaloPlot) + " minutos");
 			plt::save("plots/"+std::to_string(numplots));
+			plotar_corpos();
+            plt::title("Distribuição dos corpos apos " + std::to_string(numplots * intervaloPlot) + " minutos");
+			plt::save("plots/dist_" + std::to_string(numplots) + ".png");
             numplots++;
         }
 
