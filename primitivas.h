@@ -8,11 +8,11 @@ const double AL = 1.0; const float UA = 0.0000158125 * AL;  const float metro = 
 const float kg = mSol / 1.89e30;
 //const float G = 0.00005;
 //const float G = 6.67e-11 * newton * metro * metro / kg;
-const float G = 1.34e-17 * AL * AL * AL / mSol / (milenio * milenio);
+const float G = 1.76e-7 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e8*AL;
 
 const int n = 10000;
-int nBojo = 3*n/4;
+int nBojo = n/2;
 int nDisco = n - nBojo;
 //int nHalo = n - nBojo - nDisco;
 
@@ -21,7 +21,7 @@ float cores_corpos[n][3];
 float espacamento = 110e3 * AL;
 float espessura = 3e3 * AL;
 
-const float dt = 3e7 * milenio;
+const float dt = 1e2 * milenio;
 
 bool ignora_corpos_externos = false; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
 
@@ -164,11 +164,21 @@ void atualizaForcaInicial(corpo(&corpos)[n]) {
 void achaVelocidadeRadial(corpo(&corpos)[n]) {
     #pragma omp parallel for
     for (int i = 0; i < n; i++) {
-        float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
+
+        float raio_xy = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
+        float raio = corpos[i].raioInicial;
 		float aceleracao_radial = sqrt(corpos[i].acc[0] * corpos[i].acc[0] + corpos[i].acc[1] * corpos[i].acc[1]);
 		float velocidade_orbital = sqrt(aceleracao_radial * raio);
-		corpos[i].vel[0] = -corpos[i].pos[1] / raio * velocidade_orbital;
-		corpos[i].vel[1] = corpos[i].pos[0] / raio * velocidade_orbital;
+        if (corpos[i].tipoCorpo == tipo::bojo) {
+			corpos[i].vel[0] = -velocidade_orbital * corpos[i].pos[1] / raio_xy;
+			corpos[i].vel[1] = velocidade_orbital * corpos[i].pos[0] / raio_xy;
+			corpos[i].vel[2] = 0;
+		}
+        else {
+		    corpos[i].vel[0] = -corpos[i].pos[1] / raio_xy * velocidade_orbital;
+		    corpos[i].vel[1] = corpos[i].pos[0] / raio_xy * velocidade_orbital;
+			corpos[i].vel[2] = 0;
+        }
     }
 }
 // proximo passo: integrar a função de densidade e comparar com n*massa
@@ -186,7 +196,7 @@ void inicializarCorpos() {
 	std::cout << "p0: " << p0 << std::endl;
 
     for (int i = 0; i < nBojo; i++) {
-        float raiocorpo = espacamento * inversa_bojo() / 200;
+        float raiocorpo = espacamento * inversa_bojo() / 100;
         corpos[i].raioInicial = raiocorpo;
         float angulocorpo = rng() * 2 * M_PI;
         float angulocorpo1 = (rng() - 0.5) * M_PI;
@@ -296,7 +306,7 @@ void desenhag() {
 
     for (int i = 0; i < n; i++) {
         if (corpos[i].exist == true) {	
-            desenhaPonto(1.5, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2] * 80 / espacamento ), cores_corpos[i]);
+            desenhaPonto(1, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2] * 80 / espacamento ), cores_corpos[i]);
 		}}
     #pragma omp parallel for
     for (int i = 0; i < n; i++) {

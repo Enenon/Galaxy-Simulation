@@ -21,7 +21,7 @@
 #include "headers/matplotlibcpp.h"
 
 
-const float intervaloPlot = 5; // <--- minutos
+const float intervaloPlot = 1; // <--- minutos
 int numplots = 0;
 float num = 0.0;
 
@@ -33,7 +33,7 @@ static void plotar() {
 
     std::cout << "Calculando raio x velocidade..." << std::endl;
 
-	const float raioMaximoPlot = 1.5; // até quantos raios eu quero plotar
+	const float raioMaximoPlot = 1.1; // até quantos raios eu quero plotar
     const int numDivisoes = 100;
 	const int numTotalDivisoes = numDivisoes * raioMaximoPlot;
     double velxraio[numTotalDivisoes][2] = { 0 }; // 0 = velocidade, 1 = numero de corpos
@@ -88,7 +88,7 @@ static void plotar_corpos() {
     plt::figure_size(800, 800);
     //plt::scatter3(x, y, z, 1.0);
 	//plt::subplot(1, 1, 1);
-    plt::scatter(x, y, 1.0);
+    plt::scatter(x, y, 1.0,{{"color","black"}});
     plt::xlabel("X (AL)");
     plt::ylabel("Y (AL)");
     //plt::set_zlabel("Z (AL)");
@@ -134,6 +134,17 @@ int main(void)
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
+        if (glfwGetTime() / 60 > numplots * intervaloPlot) {
+
+            plotar();
+            plt::title("Velocidade x Raio apos " + std::to_string(num * dt) + " milenios");
+            plt::save("plots/" + std::to_string(numplots));
+            plotar_corpos();
+            plt::title("Distribuição dos corpos apos " + std::to_string(num * dt) + " milenios");
+            plt::save("plots/dist_" + std::to_string(numplots) + ".png");
+            numplots++;
+        }
+        return 0;
         /* Render here */
         int largura, altura;
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -171,16 +182,7 @@ int main(void)
             glRotated(90, 1.0, 0.0, 0.0);
         }
 
-        if (glfwGetTime() / 60 > numplots * intervaloPlot) {
-			
-			plotar();
-            plt::title("Velocidade x Raio apos " + std::to_string(numplots*intervaloPlot) + " minutos");
-			plt::save("plots/"+std::to_string(numplots));
-			plotar_corpos();
-            plt::title("Distribuição dos corpos apos " + std::to_string(numplots * intervaloPlot) + " minutos");
-			plt::save("plots/dist_" + std::to_string(numplots) + ".png");
-            numplots++;
-        }
+
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

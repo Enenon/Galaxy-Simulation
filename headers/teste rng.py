@@ -4,7 +4,7 @@ from random import random
 from scipy import integrate
 
 rd = 110
-n = 100000
+n = 10000
 ndivisoes = 50
 p0 = 1
 p0 = 1/(1-1/np.exp(1))

@@ -70,3 +70,19 @@ std::vector<double> suavizar(const std::vector<double>& data, int windowSize) {
     }
     return smoothed;
 }
+
+std::vector<double> exponentialSmoothing(std::vector<double>& data, double alpha) {
+    std::vector<double> smoothed = { data[0]};
+    if (data.size() < 2) return smoothed;
+
+    // Começamos do segundo elemento (índice 1)
+    // Preservando o data[0] como o valor inicial de 'previous'
+    double previousSmoothed = data[0];
+
+    for (size_t i = 1; i < data.size(); ++i) {
+        double currentSmoothed = alpha * data[i] + (1.0 - alpha) * previousSmoothed;
+        smoothed.push_back(currentSmoothed);
+        previousSmoothed = currentSmoothed;
+    }
+    return smoothed;
+}
