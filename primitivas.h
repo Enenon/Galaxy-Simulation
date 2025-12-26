@@ -20,10 +20,11 @@ const float massa = 1e12 / n * mSol;
 float cores_corpos[n][3];
 float espacamento = 110e3 * AL;
 float espessura = 3e3 * AL;
+float rd = 0.3;
 
 const float dt = 1e2 * milenio;
 
-bool ignora_corpos_externos = false; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
+bool ignora_corpos_externos = true; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
 
 enum class tipo { bojo, disco, halo };
 
@@ -72,6 +73,10 @@ double rngforpdf(double (*pdf)(double), float rinic, float rfin, int iteracoes) 
 }
 
 double p0 = 1;
+
+double achap0(float rd) {
+    return rd / (1 - (1 / exp(1/rd)));
+}
 double dens_r(double r) {
     return p0*exp(-r / espacamento);
 }
@@ -191,19 +196,21 @@ void densidadeMassa() {
 using namespace std;
 void inicializarCorpos() {
     float magnitudev = 2;
-    const double p0 = 1 / ((1 - (1 / exp(1))));
+    const double p0 = achap0(rd);
 	const double p0z = 1 / ((1 - (1 / exp(1))));
 	std::cout << "p0: " << p0 << std::endl;
 
     for (int i = 0; i < nBojo; i++) {
-        float raiocorpo = espacamento * inversa_bojo() / 100;
+        float raiocorpo = espacamento * inversa_bojo() / 200;
         corpos[i].raioInicial = raiocorpo;
         float angulocorpo = rng() * 2 * M_PI;
-        float angulocorpo1 = (rng() - 0.5) * M_PI;
+        //float angulocorpo1 = (rng() - 0.5) * M_PI;
+        corpos[i].pos[2] = raiocorpo * (rng() * 2 - 1);
+		float r_xy = sqrt(raiocorpo * raiocorpo - corpos[i].pos[2] * corpos[i].pos[2]);
 
-        corpos[i].pos[0] = raiocorpo * cos(angulocorpo) * cos(angulocorpo1); // rng() * espacamento_x - espacamento_x/2;
-        corpos[i].pos[1] = raiocorpo * sin(angulocorpo) * cos(angulocorpo1);// rng()* espacamento_y - espacamento_y / 2;
-        corpos[i].pos[2] = raiocorpo * sin(angulocorpo1);
+        corpos[i].pos[0] = cos(angulocorpo) * r_xy; // rng() * espacamento_x - espacamento_x/2;
+        corpos[i].pos[1] = sin(angulocorpo) * r_xy;// rng()* espacamento_y - espacamento_y / 2;
+        
         //corpos[i].pos[2] = -espessura * (log(1 - rng() / p0z));
         corpos[i].massa = massa;
 
@@ -216,7 +223,7 @@ void inicializarCorpos() {
 
     for (int i = nBojo; i < nBojo+nDisco; i++) {
         //float raiocorpo = rngforpdf(dens_r, 0, espacamento, 10000);
-        float raiocorpo = -espacamento * (log(1 - rng() / p0)); // inversa da CDF
+        float raiocorpo = -espacamento * rd * (log(1 - rng()*rd / p0)); // inversa da CDF
         float posz = -espessura * (log(1 - rng() / p0z)); // inversa da CDF
         posz = 2 * (posz - espessura / 2);
         float angulocorpo = rng() * 2 * M_PI;

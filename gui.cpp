@@ -21,7 +21,7 @@
 #include "headers/matplotlibcpp.h"
 
 
-const float intervaloPlot = 1; // <--- minutos
+const float intervaloPlot = 0.5; // <--- minutos
 int numplots = 0;
 float num = 0.0;
 
@@ -144,7 +144,6 @@ int main(void)
             plt::save("plots/dist_" + std::to_string(numplots) + ".png");
             numplots++;
         }
-        return 0;
         /* Render here */
         int largura, altura;
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
