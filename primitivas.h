@@ -20,7 +20,7 @@ const float massa = 1e12 / n * mSol;
 float cores_corpos[n][3];
 float espacamento = 110e3 * AL;
 float espessura = 3e3 * AL;
-float rd = 0.3;
+float rd = 0.5;
 
 const float dt = 1e2 * milenio;
 
@@ -78,11 +78,11 @@ double achap0(float rd) {
     return rd / (1 - (1 / exp(1/rd)));
 }
 double dens_r(double r) {
-    return p0*exp(-r / espacamento);
+    return p0*exp(-r / rd);
 }
 
 double dens_r_2(double r, double k) {
-	return r * dens_r(r); // tem q ter o r pra considerar a área da casca cilíndrica 2pi*r*dr
+	return 2*M_PI * r * dens_r(r); // tem q ter o r pra considerar a área da casca cilíndrica 2pi*r*dr
 }
 
 double dens_div_r(double rl, double r) {
@@ -222,8 +222,8 @@ void inicializarCorpos() {
     }
 
     for (int i = nBojo; i < nBojo+nDisco; i++) {
-        //float raiocorpo = rngforpdf(dens_r, 0, espacamento, 10000);
-        float raiocorpo = -espacamento * rd * (log(1 - rng()*rd / p0)); // inversa da CDF
+        float raiocorpo = rngforpdf(dens_r, 0, espacamento, 10000);
+        //float raiocorpo = -espacamento * rd * (log(1 - rng()*rd / p0)); // inversa da CDF
         float posz = -espessura * (log(1 - rng() / p0z)); // inversa da CDF
         posz = 2 * (posz - espessura / 2);
         float angulocorpo = rng() * 2 * M_PI;

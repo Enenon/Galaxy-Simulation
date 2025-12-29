@@ -19,6 +19,8 @@
 
 #include "headers/old.cpp"
 #include "headers/matplotlibcpp.h"
+#include <algorithm> // Para std::lower_bound
+#include <fstream>
 
 
 const float intervaloPlot = 0.5; // <--- minutos
@@ -97,6 +99,51 @@ static void plotar_corpos() {
     std::cout << "Gráfico salvo como distribuicao_corpos.png" << std::endl;
 }
 
+struct LUT {
+    std::vector<double> m_vals;
+    std::vector<double> r_vals;
+};
+
+// Função para ler o documento e preencher os arrays
+LUT loadTable(const std::string& filename) {
+    LUT table;
+    std::ifstream file(filename);
+    double m, r;
+
+    if (!file.is_open()) {
+        std::cerr << "Erro ao abrir o arquivo: " << filename << std::endl;
+        return table;
+    }
+
+    while (file >> m >> r) {
+        table.m_vals.push_back(m);
+        table.r_vals.push_back(r);
+    }
+
+    file.close();
+    return table;
+}
+// Função de Busca Binária e Interpolação Linear
+double sampleRadius(double u, const LUT& table) {
+    // Busca binária: encontra o primeiro elemento que não é menor que 'u'
+    auto it = std::lower_bound(table.m_vals.begin(), table.m_vals.end(), u);
+
+    // Obtém o índice do elemento
+    size_t idx = std::distance(table.m_vals.begin(), it);
+
+    // Evita extrapolação fora dos limites da tabela
+    if (idx <= 0) return table.r_vals.front();
+    if (idx >= table.m_vals.size()) return table.r_vals.back();
+
+    // Interpolação Linear (Lerp)
+    double m0 = table.m_vals[idx - 1];
+    double m1 = table.m_vals[idx];
+    double r0 = table.r_vals[idx - 1];
+    double r1 = table.r_vals[idx];
+
+    // r = r0 + (u - m0) * (r1 - r0) / (m1 - m0)
+    return r0 + (u - m0) * (r1 - r0) / (m1 - m0);
+}
 
 int main(void)
 {
