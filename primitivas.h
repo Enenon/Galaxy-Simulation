@@ -11,14 +11,17 @@ const float kg = mSol / 1.89e30;
 const float G = 1.76e-7 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e8*AL;
 
-const int n = 10000;
-int nBojo = n/2;
-int nDisco = n - nBojo;
+const int n = 30000;
+int nBojo = n/6;
+int nHalo = n/2;
+int nDisco = n - nBojo - nHalo;
+
 //int nHalo = n - nBojo - nDisco;
 
 const float massa = 1e12 / n * mSol;
 float cores_corpos[n][3];
 float espacamento = 110e3 * AL;
+float raiomax_halo = 300e3 * AL;
 float espessura = 3e3 * AL;
 float rd = 0.5;
 
@@ -48,6 +51,66 @@ void redimensiona(int largura, int altura) {
     gluPerspective(45.0, aspect, 0.1, 500.0);
 
     glMatrixMode(GL_MODELVIEW);
+}
+
+struct LUT {
+    std::vector<double> m_vals;
+    std::vector<double> r_vals;
+};
+
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+
+LUT loadTable(const std::string& filename) {
+    LUT table;
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Erro ao abrir o arquivo: " << filename << std::endl;
+        return table;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        // Ignora linhas vazias ou comentários
+        if (line.empty()) continue;
+        // Usar istringstream para parsear de forma segura
+        std::istringstream iss(line);
+        double m_val = 0.0;
+        double r_val = 0.0;
+        if (!(iss >> m_val >> r_val)) {
+            // Linha mal-formada: pular
+            continue;
+        }
+        table.m_vals.push_back(m_val);
+        table.r_vals.push_back(r_val);
+    }
+
+    return table;
+}
+
+
+// Função de Busca Binária e Interpolação Linear
+double sampleRadius(double u, const LUT& table) {
+    // Busca binária: encontra o primeiro elemento que não é menor que 'u'
+    auto it = std::lower_bound(table.m_vals.begin(), table.m_vals.end(), u);
+
+    // Obtém o índice do elemento
+    size_t idx = std::distance(table.m_vals.begin(), it);
+
+    // Evita extrapolação fora dos limites da tabela
+    if (idx <= 0) return table.r_vals.front();
+    if (idx >= table.m_vals.size()) return table.r_vals.back();
+
+    // Interpolação Linear (Lerp)
+    double m0 = table.m_vals[idx - 1];
+    double m1 = table.m_vals[idx];
+    double r0 = table.r_vals[idx - 1];
+    double r1 = table.r_vals[idx];
+
+    // r = r0 + (u - m0) * (r1 - r0) / (m1 - m0)
+    return r0 + (u - m0) * (r1 - r0) / (m1 - m0);
 }
 
 double integrated_pdf(double (*pdf)(double rl, double r), float rinic, float rfin, float dr) {
@@ -175,8 +238,8 @@ void achaVelocidadeRadial(corpo(&corpos)[n]) {
 		float aceleracao_radial = sqrt(corpos[i].acc[0] * corpos[i].acc[0] + corpos[i].acc[1] * corpos[i].acc[1]);
 		float velocidade_orbital = sqrt(aceleracao_radial * raio);
         if (corpos[i].tipoCorpo == tipo::bojo) {
-			corpos[i].vel[0] = -velocidade_orbital * corpos[i].pos[1] / raio_xy;
-			corpos[i].vel[1] = velocidade_orbital * corpos[i].pos[0] / raio_xy;
+			corpos[i].vel[0] = -velocidade_orbital * corpos[i].pos[1] / raio;
+			corpos[i].vel[1] = velocidade_orbital * corpos[i].pos[0] / raio;
 			corpos[i].vel[2] = 0;
 		}
         else {
@@ -200,17 +263,29 @@ void inicializarCorpos() {
 	const double p0z = 1 / ((1 - (1 / exp(1))));
 	std::cout << "p0: " << p0 << std::endl;
 
-    for (int i = 0; i < nBojo; i++) {
+    LUT table_disk = loadTable("C:\\Users\\Enenon\\Documents\\GitHub\\Galaxy-Simulation\\gui\\data\\disk_table.txt");
+	LUT table_halo = loadTable("C:\\Users\\Enenon\\Documents\\GitHub\\Galaxy-Simulation\\gui\\data\\halo_table.txt");
+
+    for (int i = 0; i < nBojo; i++) { // bojo
         float raiocorpo = espacamento * inversa_bojo() / 200;
+
         corpos[i].raioInicial = raiocorpo;
         float angulocorpo = rng() * 2 * M_PI;
         //float angulocorpo1 = (rng() - 0.5) * M_PI;
-        corpos[i].pos[2] = raiocorpo * (rng() * 2 - 1);
-		float r_xy = sqrt(raiocorpo * raiocorpo - corpos[i].pos[2] * corpos[i].pos[2]);
+        float znorm = rng() * 2.0f - 1.0f;
+		float r_xy = raiocorpo * sqrt(1.0f - znorm * znorm);
+		if (r_xy != r_xy) { // verifica se é NaN
+            r_xy = 0;
+		}
 
         corpos[i].pos[0] = cos(angulocorpo) * r_xy; // rng() * espacamento_x - espacamento_x/2;
         corpos[i].pos[1] = sin(angulocorpo) * r_xy;// rng()* espacamento_y - espacamento_y / 2;
-        
+		corpos[i].pos[2] = znorm * raiocorpo;
+
+        if (i == 8399) {
+
+            cout  << "corpo amostra bojo: " << r_xy << endl;
+        }
         //corpos[i].pos[2] = -espessura * (log(1 - rng() / p0z));
         corpos[i].massa = massa;
 
@@ -218,11 +293,14 @@ void inicializarCorpos() {
         corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
 
 		corpos[i].tipoCorpo = tipo::bojo;
-        cores_corpos[i][0] = 0.8 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.8 + sin(2 * angulocorpo) * 0.2;
+        //cores_corpos[i][0] = 0.8 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.8 + sin(2 * angulocorpo) * 0.2;
+		cores_corpos[i][0] = 0.1; cores_corpos[i][1] = 0;  cores_corpos[i][2] = 0.1;
     }
 
-    for (int i = nBojo; i < nBojo+nDisco; i++) {
-        float raiocorpo = rngforpdf(dens_r, 0, espacamento, 10000);
+    for (int i = nBojo; i < nBojo + nDisco; i++) { // disco
+
+        float prdn = rng();
+		float raiocorpo = sampleRadius(prdn, table_disk)*espacamento;
         //float raiocorpo = -espacamento * rd * (log(1 - rng()*rd / p0)); // inversa da CDF
         float posz = -espessura * (log(1 - rng() / p0z)); // inversa da CDF
         posz = 2 * (posz - espessura / 2);
@@ -233,15 +311,42 @@ void inicializarCorpos() {
         corpos[i].pos[0] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
         corpos[i].pos[1] = raiocorpo * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
         corpos[i].pos[2] = posz;
+
         corpos[i].massa = massa;
 
         corpos[i].vel[2] = 0;
         corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
 
-		corpos[i].tipoCorpo = tipo::disco;
-        cores_corpos[i][0] = 0.75 + cos(2 * angulocorpo)*0.1; cores_corpos[i][1] = 0.7;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) * 0.05 - 0.3 * raiocorpo / espacamento;
-        //cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 1;
+        corpos[i].tipoCorpo = tipo::disco;
+        //cores_corpos[i][0] = 0.75 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0.7;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) * 0.05 - 0.3 * raiocorpo / espacamento;
+		cores_corpos[i][0] = 0.1; cores_corpos[i][1] = 0;  cores_corpos[i][2] = 0.2;
+
     }
+	for (int i = nBojo + nDisco; i < n; i++) { // halo
+        // float raiocorpo = espacamento * pow(rng(), 1 / 3.0); // distribuição cúbica para halo esférico
+		float prdn = rng();
+		float raiocorpo = sampleRadius(prdn, table_halo)*raiomax_halo;
+        float angulocorpo = rng() * 2 * M_PI;
+        float angulocorpo1 = acos(2 * rng() - 1);
+        if (angulocorpo1 != angulocorpo1) {
+            cout << "angulo NaN" << endl; // sinceramente n entendi pq eu fiz a projeção difetente de como fiz no bojo mas blz
+            float angulocorpo1 = M_PI;
+        }
+        if (i == 12907) {
+            cout << "corpo amostra: " << raiocorpo <<  " " << prdn << endl;
+		}
+        corpos[i].raioInicial = raiocorpo;
+        corpos[i].pos[0] = raiocorpo * sin(angulocorpo1) * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
+        corpos[i].pos[1] = raiocorpo * sin(angulocorpo1) * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
+        corpos[i].pos[2] = raiocorpo * cos(angulocorpo1);
+
+        corpos[i].massa = massa;
+        corpos[i].vel[2] = 0;
+		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
+        corpos[i].tipoCorpo = tipo::halo;
+        //cores_corpos[i][0] = 0.8 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0;  cores_corpos[i][2] = 0.7;
+		cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.9;
+	}
 #pragma omp parallel for
     for (int i = 0; i < n; i++) {
         corpos[i].vel[2] = 0;
@@ -252,10 +357,12 @@ void inicializarCorpos() {
     for (int i = 0; i < n; i++) {
         //cout << "Corpo " << i << " " << corpos[i].pos[0] << " " << corpos[i].vel[2] << endl;
     }
+	cout << "corpo 8399: " << corpos[8399].pos[0] << " " << corpos[8399].pos[1] << " " << corpos[8399].pos[2] << endl;
 
     atualizaForcaInicial(corpos);
     std::cout << "Aceleracao: " << corpos[0].acc[0] << corpos[0].acc[1] << std::endl;
     achaVelocidadeRadial(corpos);
+
 
 }
 
@@ -270,6 +377,8 @@ void inicializarCorpos() {
 
 bool leap = 0;
 
+bool primeiro = false;
+
 void desenhag() {
 	
 	using namespace std;
@@ -278,6 +387,9 @@ void desenhag() {
     float momento[3] = { 0,0,0 };
     #pragma omp parallel for
     for (int i = 0;i < n;i++) { // i é o que sofre a força
+        if (corpos[i].tipoCorpo == tipo::halo) {
+            continue;
+		}
         vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
         vec3 a1(0, 0, 0);
 		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
@@ -290,6 +402,11 @@ void desenhag() {
 				double r = sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2) + pow(p1.z - p2.z, 2));
                 double a = Fgravitacional(corpos[j].massa, r);
                 a1 = aceleracao(a, r, p1, p2); // cálculos mostraram que implementar direto na velocidade dá no mesmo q na aceleração
+                if (a1.x != a1.x && primeiro == false) { 
+					string infos = "infos " + to_string(i) + " " + to_string(corpos[i].pos[0]) + " " + to_string(j) + " " + to_string(corpos[j].pos[0]) + "||";
+                    cout << infos << endl;
+					primeiro = true;
+                }
 				corpos[i].acc[0] = corpos[i].acc[0] + a1.x; corpos[i].acc[1] = corpos[i].acc[1] + a1.y; corpos[i].acc[2] = corpos[i].acc[2] + a1.z;
 				
                 //v1 = velocidade(F, v1, p1, p2);
@@ -321,8 +438,9 @@ void desenhag() {
 	v1.x = v1.x + corpos[i].acc[0] * dt; v1.y = v1.y + corpos[i].acc[1] * dt; v1.z = v1.z + corpos[i].acc[2] * dt;
         p1.x = p1.x + v1.x*dt; p1.y = p1.y + v1.y*dt; p1.z = p1.z + v1.z*dt;
         corpos[i].vel[0] = v1.x; corpos[i].vel[1] = v1.y; corpos[i].vel[2] = v1.z;
-        corpos[i].pos[0] = p1.x; corpos[i].pos[1] = p1.y; corpos[i].pos[2] = p1.z;
-
+        if (corpos[i].tipoCorpo != tipo::halo) {
+            corpos[i].pos[0] = p1.x; corpos[i].pos[1] = p1.y; corpos[i].pos[2] = p1.z;
+        }
     }
 
     //std::cout << corpos[0][1] << " " << corpos[1][1] << std::endl;
