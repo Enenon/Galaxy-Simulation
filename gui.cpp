@@ -55,8 +55,8 @@ static void plotar() {
     std::vector<double> raioPlot, velPlot, massaPlot, massaSamplePlot;
     for (int i = 0; i < numTotalDivisoes; i++) {
         if (velxraio[i][1] > 0) {
-            raioPlot.push_back(i * espacamento / numDivisoes);
-            velPlot.push_back(velxraio[i][0] / velxraio[i][1]);
+			raioPlot.push_back(i * espacamento / numDivisoes * 3.07e-4); // conversão de AL para kpc
+			velPlot.push_back(velxraio[i][0] / velxraio[i][1] * 299.14); // conversão de AL/milenio para km/s
             //massaPlot.push_back(velxraio[i][1]);
             //massaSamplePlot.push_back(exp(-i / numDivisoes));
         }
@@ -79,8 +79,8 @@ static void plotar() {
     //plt::plot(raioPlot, massaPlot); plt::plot(raioPlot, massaSamplePlot);
 	plt::legend();
     plt::grid(true);
-    plt::xlabel("Raio(AL)");
-    plt::ylabel("Velocidade(AL/milenio)");
+    plt::xlabel("Raio(kpc)");
+    plt::ylabel("Velocidade(km/s)");
 }
 
 static void plotar_corpos() {
