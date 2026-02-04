@@ -55,21 +55,7 @@ void desenhaCubo(float tamanho) {
 
 }
 
-std::vector<double> suavizar(const std::vector<double>& data, int windowSize) {
-    if (data.empty() || windowSize <= 0) return {};
 
-    std::vector<double> smoothed;
-    int n = data.size();
-
-    for (int i = 0; i <= n - windowSize; ++i) {
-        double sum = 0.0;
-        for (int j = 0; j < windowSize; ++j) {
-            sum += data[i + j];
-        }
-        smoothed.push_back(sum / windowSize);
-    }
-    return smoothed;
-}
 
 std::vector<double> exponentialSmoothing(std::vector<double>& data, double alpha) {
     std::vector<double> smoothed = { data[0]};
@@ -83,6 +69,20 @@ std::vector<double> exponentialSmoothing(std::vector<double>& data, double alpha
         double currentSmoothed = alpha * data[i] + (1.0 - alpha) * previousSmoothed;
         smoothed.push_back(currentSmoothed);
         previousSmoothed = currentSmoothed;
+    }
+    return smoothed;
+}
+
+std::vector<double> movingAverage(const std::vector<double>& data, int windowSize) {
+    std::vector<double> smoothed;
+    int n = data.size();
+
+    for (int i = 0; i <= n - windowSize; ++i) {
+        double sum = 0.0;
+        for (int j = 0; j < windowSize; ++j) {
+            sum += data[i + j];
+        }
+        smoothed.push_back(sum / windowSize);
     }
     return smoothed;
 }

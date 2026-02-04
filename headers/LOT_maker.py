@@ -19,7 +19,7 @@ def achap0(f,rmax,rs):
 
 rmax = 1
 
-n = int(5e4)
+n = int(5e5)
 r = np.linspace(0,rmax,n)
 
 #%% disco galático
@@ -33,10 +33,11 @@ def mdisk(r):
 
 
 
-rd = 0.25
+rd = 0.3
 
 
 #r = np.logspace(np.log10(1e-6),np.log10(rmax),n)
+
 
 
 
@@ -48,7 +49,7 @@ plt.show()
 
 
 
-#np.savetxt(dir + 'disk_table.txt', np.column_stack((p, r)), header='p ,r')
+np.savetxt(dir + 'disk_table.txt', np.column_stack((p, r)), header='p ,r')
 print('Tabela do disco salva!')
 
 
@@ -69,7 +70,7 @@ plt.show()
 
 #%% Halo
 rmax_halo = 1
-rs = 1
+rs = 0.06
 
 p0 = achap0(mass_nfw,rmax_halo,rs)
 

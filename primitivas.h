@@ -10,24 +10,30 @@ const float kg = mSol / 1.89e30;
 //const float G = 6.67e-11 * newton * metro * metro / kg;
 const float G = 1.76e-7 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e8*AL;
+const float kpc = 3.26e3 * AL; // 1 kpc em AL
 
-const int n = 30000;
-int nBojo = n/6;
+const int n = 6000;
+int nBojo = 0;
 int nHalo = n/2;
 int nDisco = n - nBojo - nHalo;
 
 //int nHalo = n - nBojo - nDisco;
+const float massa_total_bar = 3e11;
+const float massa_total_halo = 9.6e11;
 
-const float massa = 1e12 / n * mSol;
+const float massa = massa_total_bar / (nDisco+nBojo) * mSol;
+const float massa_halo = massa_total_halo / nHalo * mSol;
+
 float cores_corpos[n][3];
-float espacamento = 110e3 * AL;
-float raiomax_halo = 300e3 * AL;
+float espacamento = 10 * kpc; // tamanho do disco
+float raiomax_halo = 50 * kpc;
 float espessura = 3e3 * AL;
 float rd = 0.5;
 
 const float dt = 1e2 * milenio;
 
-bool ignora_corpos_externos = true; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
+const bool ignora_corpos_externos = true; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
+const bool tem_materia_escura = true;
 
 enum class tipo { bojo, disco, halo };
 
@@ -137,6 +143,18 @@ double rngforpdf(double (*pdf)(double), float rinic, float rfin, int iteracoes) 
 
 double p0 = 1;
 
+struct corpo {
+    double massa;
+    double pos[3];
+    double raioInicial;
+    double vel[3];
+    double acc[3];
+    tipo tipoCorpo;
+    bool exist;
+	color cor;
+};
+
+
 double achap0(float rd) {
     return rd / (1 - (1 / exp(1/rd)));
 }
@@ -169,7 +187,13 @@ void desenhaPonto(float r,vec3 p,colora cor) {
     glEnd();
 }
 
-float Fgravitacional(float m2, float r) {
+float Fgravitacional(corpo j, float r) {
+	double m2 = j.massa;
+    if (!tem_materia_escura) {
+        if (j.tipoCorpo == tipo::halo) {
+            return 0;
+        }
+	}
 	double r2 = r * r;
     float F = -G * m2 / (r2 + r_soft);
     return F;
@@ -191,15 +215,7 @@ vec3 aceleracao(float F, float r, vec3 p1, vec3 p2) {
 
 }
 
-struct corpo {
-    double massa;
-    double pos[3];
-    double raioInicial;
-    double vel[3];
-    double acc[3];
-	tipo tipoCorpo;
-    bool exist;
-};
+
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
 corpo corpos[n];
@@ -222,7 +238,7 @@ void atualizaForcaInicial(corpo(&corpos)[n]) {
                 vec3 p2(corpos[j].pos[0], corpos[j].pos[1], corpos[j].pos[2]);
                 vec3 v2(corpos[j].vel[0], corpos[j].vel[1], corpos[j].vel[2]);
                 double r = sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2) + pow(p1.z - p2.z, 2));
-                double a = Fgravitacional(corpos[j].massa, r);
+                double a = Fgravitacional(corpos[j], r);
                 a1 = aceleracao(a, r, p1, p2); // cálculos mostraram que implementar direto na velocidade dá no mesmo q na aceleração
                 corpos[i].acc[0] = corpos[i].acc[0] + a1.x; corpos[i].acc[1] = corpos[i].acc[1] + a1.y; corpos[i].acc[2] = corpos[i].acc[2] + a1.z;
             }
@@ -243,8 +259,8 @@ void achaVelocidadeRadial(corpo(&corpos)[n]) {
 			corpos[i].vel[2] = 0;
 		}
         else {
-		    corpos[i].vel[0] = -corpos[i].pos[1] / raio_xy * velocidade_orbital;
-		    corpos[i].vel[1] = corpos[i].pos[0] / raio_xy * velocidade_orbital;
+		    corpos[i].vel[0] = -corpos[i].pos[1] / raio * velocidade_orbital;
+		    corpos[i].vel[1] = corpos[i].pos[0] / raio * velocidade_orbital;
 			corpos[i].vel[2] = 0;
         }
     }
@@ -294,7 +310,7 @@ void inicializarCorpos() {
 
 		corpos[i].tipoCorpo = tipo::bojo;
         //cores_corpos[i][0] = 0.8 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.8 + sin(2 * angulocorpo) * 0.2;
-		cores_corpos[i][0] = 0.1; cores_corpos[i][1] = 0;  cores_corpos[i][2] = 0.1;
+        corpos[i].cor[0] = 0.1; corpos[i].cor[1] = 0; corpos[i].cor[2] = 0.1;
     }
 
     for (int i = nBojo; i < nBojo + nDisco; i++) { // disco
@@ -319,7 +335,7 @@ void inicializarCorpos() {
 
         corpos[i].tipoCorpo = tipo::disco;
         //cores_corpos[i][0] = 0.75 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0.7;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) * 0.05 - 0.3 * raiocorpo / espacamento;
-		cores_corpos[i][0] = 0.1; cores_corpos[i][1] = 0;  cores_corpos[i][2] = 0.2;
+        corpos[i].cor[0] = 0.2; corpos[i].cor[1] = 0; corpos[i].cor[2] = 0.3;
 
     }
 	for (int i = nBojo + nDisco; i < n; i++) { // halo
@@ -340,12 +356,12 @@ void inicializarCorpos() {
         corpos[i].pos[1] = raiocorpo * sin(angulocorpo1) * sin(angulocorpo);// rng()* espacamento_y - espacamento_y / 2;
         corpos[i].pos[2] = raiocorpo * cos(angulocorpo1);
 
-        corpos[i].massa = massa;
+        corpos[i].massa = massa_halo;
         corpos[i].vel[2] = 0;
 		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
         corpos[i].tipoCorpo = tipo::halo;
         //cores_corpos[i][0] = 0.8 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0;  cores_corpos[i][2] = 0.7;
-		cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.9;
+        corpos[i].cor[0] = 0.8; corpos[i].cor[1] = 0.6; corpos[i].cor[2] = 1;
 	}
 #pragma omp parallel for
     for (int i = 0; i < n; i++) {
@@ -357,7 +373,6 @@ void inicializarCorpos() {
     for (int i = 0; i < n; i++) {
         //cout << "Corpo " << i << " " << corpos[i].pos[0] << " " << corpos[i].vel[2] << endl;
     }
-	cout << "corpo 8399: " << corpos[8399].pos[0] << " " << corpos[8399].pos[1] << " " << corpos[8399].pos[2] << endl;
 
     atualizaForcaInicial(corpos);
     std::cout << "Aceleracao: " << corpos[0].acc[0] << corpos[0].acc[1] << std::endl;
@@ -400,7 +415,7 @@ void desenhag() {
 				vec3 p2(corpos[j].pos[0], corpos[j].pos[1], corpos[j].pos[2]);
 				vec3 v2(corpos[j].vel[0], corpos[j].vel[1], corpos[j].vel[2]);
 				double r = sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2) + pow(p1.z - p2.z, 2));
-                double a = Fgravitacional(corpos[j].massa, r);
+                double a = Fgravitacional(corpos[j], r);
                 a1 = aceleracao(a, r, p1, p2); // cálculos mostraram que implementar direto na velocidade dá no mesmo q na aceleração
                 if (a1.x != a1.x && primeiro == false) { 
 					string infos = "infos " + to_string(i) + " " + to_string(corpos[i].pos[0]) + " " + to_string(j) + " " + to_string(corpos[j].pos[0]) + "||";
@@ -430,7 +445,7 @@ void desenhag() {
 
     for (int i = 0; i < n; i++) {
         if (corpos[i].exist == true) {	
-            desenhaPonto(1, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2] * 80 / espacamento ), cores_corpos[i]);
+            desenhaPonto(2, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2] * 80 / espacamento ), corpos[i].cor);
 		}}
     #pragma omp parallel for
     for (int i = 0; i < n; i++) {

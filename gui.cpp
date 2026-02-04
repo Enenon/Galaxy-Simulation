@@ -33,16 +33,40 @@ double pastTime = 0.0;
 
 namespace plt = matplotlibcpp;
 
+static void salvar_tabela(string nome_arquivo, std::vector<double> r, std::vector<double> v) {
+    std::ofstream arquivo(nome_arquivo);
+    int tamanho = r.size();
+    arquivo << std::setw(10) << std::left << "#r";
+    arquivo << std::setw(10) << std::left << "v";
+    arquivo << "\n";
+
+    if (arquivo.is_open()) {
+        for (int i = 0; i < tamanho; i++) {
+            arquivo << std::setw(10) << std::left << r[i];
+            arquivo << std::setw(10) << std::left << v[i];
+            arquivo << "\n"; // Quebra de linha ao fim de cada linha da matriz
+        }
+        arquivo.close();
+        std::cout << "Dados salvos com sucesso!" << std::endl;
+    }
+    else {
+        std::cout << "Erro ao abrir o arquivo." << std::endl;
+    }
+}
+
+
+
 static void plotar() {
 
     std::cout << "Calculando raio x velocidade..." << std::endl;
 
-	const float raioMaximoPlot = 2; // até quantos raios eu quero plotar
+	const float raioMaximoPlot = 4; // até quantos raios eu quero plotar
     const int numDivisoes = 100;
 	const int numTotalDivisoes = numDivisoes * raioMaximoPlot;
     double velxraio[numTotalDivisoes][2] = { 0 }; // 0 = velocidade, 1 = numero de corpos
     for (int i = 0; i < n; i++) {
-        float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
+        //float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
+        float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1] + corpos[i].pos[2] * corpos[i].pos[2]);
         float vel = sqrt(corpos[i].vel[0] * corpos[i].vel[0] + corpos[i].vel[1] * corpos[i].vel[1]);
         int indice = (int)(raio / espacamento * numDivisoes);
         if (raio > 0) {
@@ -62,14 +86,19 @@ static void plotar() {
         }
     }
 
-	std::vector<double> velSuavizada = suavizar(velPlot, 3);
-    std::vector<double> raioSuavizado = suavizar(raioPlot, 3);
+
+    std::vector<double> velSuavizada = exponentialSmoothing(velPlot, 0.08);
+    std::vector<double> raioSuavizado = exponentialSmoothing(raioPlot, 0.08);
+    if (numplots == 0) {
+        salvar_tabela("plots/velxraio_" + std::to_string(numplots) + ".txt", raioPlot, velPlot);
+	}
+	
 
 
-    plt::figure_size(1000, 500);
+    plt::figure_size(800, 600);
     plt::plot(raioPlot, velPlot, {
     { "label", "valores" },
-    { "color", "black" },
+    { "color", "gray" },
     { "linestyle", "" },
     { "marker", "." },
     { "markersize", "3" } });
@@ -78,7 +107,7 @@ static void plotar() {
 
     //plt::plot(raioPlot, massaPlot); plt::plot(raioPlot, massaSamplePlot);
 	plt::legend();
-    plt::grid(true);
+    //plt::grid(true);
     plt::xlabel("Raio(kpc)");
     plt::ylabel("Velocidade(km/s)");
 }
@@ -100,9 +129,7 @@ static void plotar_corpos() {
     //plt::set_zlabel("Z (AL)");
 	plt::xlim(-espacamento * 1.5, espacamento * 1.5);
 	plt::ylim(-espacamento * 1.5, espacamento * 1.5);
-    std::cout << "Gráfico salvo como distribuicao_corpos.png" << std::endl;
 }
-
 
 
 int main(void)
@@ -150,6 +177,7 @@ int main(void)
             plt::title("Distribuição dos corpos apos " + std::to_string(num * dt) + " milenios");
             plt::save("plots/dist_" + std::to_string(numplots) + ".png");
             numplots++;
+			cout << "Plot salvo como plots/" << numplots - 1 << ".png" << endl;
         }
         /* Render here */
         int largura, altura;
