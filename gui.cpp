@@ -104,9 +104,9 @@ static void plotar() {
     for (int i = 0; i < velSuavizada.size(); i++) {
         //cout << "Raio suavizado: " << raioSuavizado[i] << " Velocidade suavizada: " << velSuavizada[i] << endl;
 	}
-    if (numplots == 0) {
-        salvar_tabela("plots/velxraio_" + std::to_string(numplots) + ".txt", raioPlot, velPlot);
-	}
+
+    salvar_tabela("plots/velxraio_" + std::to_string(numplots) + ".txt", raioPlot, velPlot);
+	
 	
 
 
@@ -132,6 +132,9 @@ static void plotar_corpos() {
     std::cout << "Plotando corpos..." << std::endl;
     std::vector<double> x, y, z;
     for (int i = 0; i < n; i++) {
+        if (corpos[i].tipoCorpo == tipo::halo) {
+            continue; // pular corpos do halo
+		}
         x.push_back(corpos[i].pos[0]);
         y.push_back(corpos[i].pos[1]);
         z.push_back(corpos[i].pos[2]);

@@ -70,7 +70,7 @@ plt.show()
 
 #%% Halo
 rmax_halo = 1
-rs = 0.06
+rs = 0.3
 
 p0 = achap0(mass_nfw,rmax_halo,rs)
 

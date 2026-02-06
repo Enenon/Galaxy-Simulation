@@ -19,20 +19,21 @@ int nDisco = n - nBojo - nHalo;
 
 const bool tem_corpo_teste = true;
 const int numDivisoes = 100;
+
 const float raioMaximoPlot = 4; // até quantos raios eu quero plotar
 
 
 const int numCorposTeste = tem_corpo_teste ? numDivisoes : 0;
 
 //int nHalo = n - nBojo - nDisco;
-const float massa_total_bar = 3e11;
-const float massa_total_halo = 0;
+const float massa_total_bar = 1.9e11;
+const float massa_total_halo = 5.7e11;
 
 const float massa = massa_total_bar / (nDisco+nBojo) * mSol;
 const float massa_halo = massa_total_halo / nHalo * mSol;
 
 float cores_corpos[n][3];
-float espacamento = 10 * kpc; // tamanho do disco
+float espacamento = 15 * kpc; // tamanho do disco
 float raiomax_halo = 50 * kpc;
 float espessura = 3e3 * AL;
 float rd = 0.5;
