@@ -25,7 +25,7 @@
 
 
 
-const float intervaloPlot = 0.5; // <--- minutos
+const float intervaloPlot = 2; // <--- minutos
 int numplots = 0;
 float num = 0.0;
 
@@ -60,10 +60,11 @@ static void plotar() {
 
     std::cout << "Calculando raio x velocidade..." << std::endl;
 
-	const float raioMaximoPlot = 4; // até quantos raios eu quero plotar
-    const int numDivisoes = 100;
-	const int numTotalDivisoes = numDivisoes * raioMaximoPlot;
+    const int numTotalDivisoes = tem_corpo_teste ? numDivisoes : numDivisoes*raioMaximoPlot;
     double velxraio[numTotalDivisoes][2] = { 0 }; // 0 = velocidade, 1 = numero de corpos
+    std::vector<double> raioPlot, velPlot, massaPlot, massaSamplePlot;
+
+    if (!tem_corpo_teste){
     for (int i = 0; i < n; i++) {
         //float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
         float raio = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1] + corpos[i].pos[2] * corpos[i].pos[2]);
@@ -76,19 +77,33 @@ static void plotar() {
             }
         }
     }
-    std::vector<double> raioPlot, velPlot, massaPlot, massaSamplePlot;
     for (int i = 0; i < numTotalDivisoes; i++) {
         if (velxraio[i][1] > 0) {
-			raioPlot.push_back(i * espacamento / numDivisoes * 3.07e-4); // conversão de AL para kpc
-			velPlot.push_back(velxraio[i][0] / velxraio[i][1] * 299.14); // conversão de AL/milenio para km/s
+            raioPlot.push_back(i * espacamento / numDivisoes * 3.07e-4); // conversão de AL para kpc
+            velPlot.push_back(velxraio[i][0] / velxraio[i][1] * 299.14); // conversão de AL/milenio para km/s
             //massaPlot.push_back(velxraio[i][1]);
             //massaSamplePlot.push_back(exp(-i / numDivisoes));
         }
     }
-
+    }
+    else {
+        // corpo de teste
+        for (int i = n; i < n + numCorposTeste; i++) {
+            float raio = corpos[i].raioInicial;
+            float vel = corpos[i].vel[1];
+			//cout << "Raio: " << raio << " Velocidade: " << vel << endl;
+			raioPlot.push_back(raio * 3.07e-4); // conversão de AL para kpc
+			velPlot.push_back(vel * 299.14); // conversão de AL/milenio para km/s
+			//cout << "Indice: " << i - n << " VelxRaio: " << velxraio[i - n][0] << " NumCorpos: " << velxraio[i - n][1] << endl;
+            }
+        
+	}
 
     std::vector<double> velSuavizada = exponentialSmoothing(velPlot, 0.08);
     std::vector<double> raioSuavizado = exponentialSmoothing(raioPlot, 0.08);
+    for (int i = 0; i < velSuavizada.size(); i++) {
+        //cout << "Raio suavizado: " << raioSuavizado[i] << " Velocidade suavizada: " << velSuavizada[i] << endl;
+	}
     if (numplots == 0) {
         salvar_tabela("plots/velxraio_" + std::to_string(numplots) + ".txt", raioPlot, velPlot);
 	}
@@ -102,9 +117,10 @@ static void plotar() {
     { "linestyle", "" },
     { "marker", "." },
     { "markersize", "3" } });
-
-    plt::plot(raioSuavizado, velSuavizada, {{"label","curva suavizada"}});
-
+    if (!tem_corpo_teste) {
+        plt::plot(raioSuavizado, velSuavizada, { {"label","curva suavizada"} });
+    }
+    
     //plt::plot(raioPlot, massaPlot); plt::plot(raioPlot, massaSamplePlot);
 	plt::legend();
     //plt::grid(true);

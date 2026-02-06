@@ -12,14 +12,21 @@ const float G = 1.76e-7 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e8*AL;
 const float kpc = 3.26e3 * AL; // 1 kpc em AL
 
-const int n = 6000;
+const int n = 11000;
 int nBojo = 0;
 int nHalo = n/2;
 int nDisco = n - nBojo - nHalo;
 
+const bool tem_corpo_teste = true;
+const int numDivisoes = 100;
+const float raioMaximoPlot = 4; // até quantos raios eu quero plotar
+
+
+const int numCorposTeste = tem_corpo_teste ? numDivisoes : 0;
+
 //int nHalo = n - nBojo - nDisco;
 const float massa_total_bar = 3e11;
-const float massa_total_halo = 9.6e11;
+const float massa_total_halo = 0;
 
 const float massa = massa_total_bar / (nDisco+nBojo) * mSol;
 const float massa_halo = massa_total_halo / nHalo * mSol;
@@ -35,7 +42,9 @@ const float dt = 1e2 * milenio;
 const bool ignora_corpos_externos = true; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
 const bool tem_materia_escura = true;
 
-enum class tipo { bojo, disco, halo };
+enum class tipo { bojo, disco, halo, teste };
+
+
 
 struct vec3 {
     float x, y, z;
@@ -218,11 +227,11 @@ vec3 aceleracao(float F, float r, vec3 p1, vec3 p2) {
 
 
 // orden: massa, x, y, z, vx,vy, vz, ax, ay, az, exist
-corpo corpos[n];
+corpo corpos[n+numCorposTeste];
 
-void atualizaForcaInicial(corpo(&corpos)[n]) {
+void atualizaForcaInicial(corpo(&corpos)[n+numCorposTeste]) {
     #pragma omp parallel for
-    for (int i = 0; i < n; i++) { // i é o que sofre a força
+    for (int i = 0; i < n+numCorposTeste; i++) { // i é o que sofre a força
         vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
         vec3 a1(0, 0, 0);
         corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
@@ -245,14 +254,17 @@ void atualizaForcaInicial(corpo(&corpos)[n]) {
         }
     }
 }
-void achaVelocidadeRadial(corpo(&corpos)[n]) {
+void achaVelocidadeRadial(corpo(&corpos)[n+numCorposTeste]) {
     #pragma omp parallel for
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n+numCorposTeste; i++) {
 
         float raio_xy = sqrt(corpos[i].pos[0] * corpos[i].pos[0] + corpos[i].pos[1] * corpos[i].pos[1]);
         float raio = corpos[i].raioInicial;
-		float aceleracao_radial = sqrt(corpos[i].acc[0] * corpos[i].acc[0] + corpos[i].acc[1] * corpos[i].acc[1]);
+		float aceleracao_radial = sqrt(corpos[i].acc[0] * corpos[i].acc[0] + corpos[i].acc[1] * corpos[i].acc[1] + corpos[i].acc[2] * corpos[i].acc[2]); // o eixo z também é importante pois é consideravel ao halo
 		float velocidade_orbital = sqrt(aceleracao_radial * raio);
+        if (raio == 0) {
+            raio = raio + 0.00000001; // isso impede NaN em corpos que estão exatamente no centro
+		}
         if (corpos[i].tipoCorpo == tipo::bojo) {
 			corpos[i].vel[0] = -velocidade_orbital * corpos[i].pos[1] / raio;
 			corpos[i].vel[1] = velocidade_orbital * corpos[i].pos[0] / raio;
@@ -363,6 +375,18 @@ void inicializarCorpos() {
         //cores_corpos[i][0] = 0.8 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0;  cores_corpos[i][2] = 0.7;
         corpos[i].cor[0] = 0.8; corpos[i].cor[1] = 0.6; corpos[i].cor[2] = 1;
 	}
+    for (int i = n; i < n + numCorposTeste; i++) { // corpos de teste
+        corpos[i].massa = 0;
+		corpos[i].raioInicial = ((float)(i - n) / numCorposTeste) * espacamento * raioMaximoPlot;
+        corpos[i].pos[0] = corpos[i].raioInicial;
+        corpos[i].pos[1] = 0;
+        corpos[i].pos[2] = 0;
+        corpos[i].vel[0] = 0; corpos[i].vel[1] = 0; corpos[i].vel[2] = 0;
+        corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
+        corpos[i].exist = true;
+		corpos[i].cor[0] = 1; corpos[i].cor[1] = 0; corpos[i].cor[2] = 0;
+		corpos[i].tipoCorpo = tipo::teste;
+    }
 #pragma omp parallel for
     for (int i = 0; i < n; i++) {
         corpos[i].vel[2] = 0;
@@ -401,7 +425,7 @@ void desenhag() {
     m1 = 1; m2 = 0.7;
     float momento[3] = { 0,0,0 };
     #pragma omp parallel for
-    for (int i = 0;i < n;i++) { // i é o que sofre a força
+    for (int i = 0;i < n+numCorposTeste;i++) { // i é o que sofre a força
         if (corpos[i].tipoCorpo == tipo::halo) {
             continue;
 		}
@@ -450,13 +474,25 @@ void desenhag() {
     #pragma omp parallel for
     for (int i = 0; i < n; i++) {
         vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
-	v1.x = v1.x + corpos[i].acc[0] * dt; v1.y = v1.y + corpos[i].acc[1] * dt; v1.z = v1.z + corpos[i].acc[2] * dt;
+	    v1.x = v1.x + corpos[i].acc[0] * dt; v1.y = v1.y + corpos[i].acc[1] * dt; v1.z = v1.z + corpos[i].acc[2] * dt;
         p1.x = p1.x + v1.x*dt; p1.y = p1.y + v1.y*dt; p1.z = p1.z + v1.z*dt;
         corpos[i].vel[0] = v1.x; corpos[i].vel[1] = v1.y; corpos[i].vel[2] = v1.z;
-        if (corpos[i].tipoCorpo != tipo::halo) {
+
+        if (corpos[i].tipoCorpo != tipo::halo && corpos[i].tipoCorpo != tipo::teste) {
             corpos[i].pos[0] = p1.x; corpos[i].pos[1] = p1.y; corpos[i].pos[2] = p1.z;
         }
     }
+    for (int i = n; i < n + numCorposTeste; i++) { // apenas as partículas de teste
+        float raio = corpos[i].raioInicial;
+        float aceleracao_radial = sqrt(corpos[i].acc[0] * corpos[i].acc[0] + corpos[i].acc[1] * corpos[i].acc[1]);
+        float velocidade_orbital = sqrt(aceleracao_radial * raio);
+        if (raio == 0) {
+            raio = raio + 0.00000001; // isso impede NaN em corpos que estão exatamente no centro
+        }
+        corpos[i].vel[0] = -velocidade_orbital * corpos[i].pos[1] / raio;
+        corpos[i].vel[1] = velocidade_orbital * corpos[i].pos[0] / raio;
+        corpos[i].vel[2] = 0;
+	}
 
     //std::cout << corpos[0][1] << " " << corpos[1][1] << std::endl;
 
