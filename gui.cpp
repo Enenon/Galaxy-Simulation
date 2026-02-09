@@ -158,7 +158,7 @@ int main(void)
 	
 	densidadeMassa();
     inicializarCorpos();
-    //return 0;
+
     //return 0;
     /* Initialize the library */
     glfwInit();

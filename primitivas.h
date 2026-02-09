@@ -9,10 +9,10 @@ const float kg = mSol / 1.89e30;
 //const float G = 0.00005;
 //const float G = 6.67e-11 * newton * metro * metro / kg;
 const float G = 1.76e-7 * AL * AL * AL / mSol / (milenio * milenio);
-const float r_soft = 5e8*AL;
+const float r_soft = 5e7*AL;
 const float kpc = 3.26e3 * AL; // 1 kpc em AL
 
-const int n = 11000;
+const int n = 3000;
 int nBojo = 0;
 int nHalo = n/2;
 int nDisco = n - nBojo - nHalo;
@@ -26,11 +26,12 @@ const float raioMaximoPlot = 4; // até quantos raios eu quero plotar
 const int numCorposTeste = tem_corpo_teste ? numDivisoes : 0;
 
 //int nHalo = n - nBojo - nDisco;
-const float massa_total_bar = 1.9e11;
-const float massa_total_halo = 5.7e11;
+const float massa_total_bar = 1.2e11;
+const float massa_total_halo = 6.2e11; // 5.7e11
 
 const float massa = massa_total_bar / (nDisco+nBojo) * mSol;
-const float massa_halo = massa_total_halo / nHalo * mSol;
+const float massa_halo = nHalo ? massa_total_halo / nHalo * mSol : 0; // se nHalo>0 massa_halo é calculada, caso contrário, é 0
+//const float massa_halo = massa_total_halo / nHalo * mSol;
 
 float cores_corpos[n][3];
 float espacamento = 15 * kpc; // tamanho do disco
@@ -38,13 +39,13 @@ float raiomax_halo = 50 * kpc;
 float espessura = 3e3 * AL;
 float rd = 0.5;
 
-const float dt = 1e2 * milenio;
+const float dt = 1e2 * milenio; // 1e2 * milenio é o ideal
 
 const bool ignora_corpos_externos = true; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
 const bool tem_materia_escura = true;
 
 enum class tipo { bojo, disco, halo, teste };
-
+const float escala_visual = 50 / espacamento; // quantos AL cada unidade de distância representa na visualização
 
 
 struct vec3 {
@@ -162,6 +163,7 @@ struct corpo {
     tipo tipoCorpo;
     bool exist;
 	color cor;
+	float tamanho = 1.3;
 };
 
 
@@ -206,6 +208,7 @@ float Fgravitacional(corpo j, float r) {
 	}
 	double r2 = r * r;
     float F = -G * m2 / (r2 + r_soft);
+
     return F;
 }
 vec3 velocidade(float F, vec3 v1, vec3 p1, vec3 p2) {
@@ -253,6 +256,7 @@ void atualizaForcaInicial(corpo(&corpos)[n+numCorposTeste]) {
                 corpos[i].acc[0] = corpos[i].acc[0] + a1.x; corpos[i].acc[1] = corpos[i].acc[1] + a1.y; corpos[i].acc[2] = corpos[i].acc[2] + a1.z;
             }
         }
+        
     }
 }
 void achaVelocidadeRadial(corpo(&corpos)[n+numCorposTeste]) {
@@ -263,20 +267,23 @@ void achaVelocidadeRadial(corpo(&corpos)[n+numCorposTeste]) {
         float raio = corpos[i].raioInicial;
 		float aceleracao_radial = sqrt(corpos[i].acc[0] * corpos[i].acc[0] + corpos[i].acc[1] * corpos[i].acc[1] + corpos[i].acc[2] * corpos[i].acc[2]); // o eixo z também é importante pois é consideravel ao halo
 		float velocidade_orbital = sqrt(aceleracao_radial * raio);
-        if (raio == 0) {
-            raio = raio + 0.00000001; // isso impede NaN em corpos que estão exatamente no centro
+        if (raio == 0 || raio_xy == 0) {
+            raio = raio + 0.000001; // isso impede NaN em corpos que estão exatamente no centro
+			raio_xy = raio_xy + 0.000001; // isso impede NaN em corpos que estão exatamente no centro
 		}
         if (corpos[i].tipoCorpo == tipo::bojo) {
-			corpos[i].vel[0] = -velocidade_orbital * corpos[i].pos[1] / raio;
-			corpos[i].vel[1] = velocidade_orbital * corpos[i].pos[0] / raio;
+			corpos[i].vel[0] = -velocidade_orbital * corpos[i].pos[1] / raio_xy;
+			corpos[i].vel[1] = velocidade_orbital * corpos[i].pos[0] / raio_xy;
 			corpos[i].vel[2] = 0;
 		}
         else {
-		    corpos[i].vel[0] = -corpos[i].pos[1] / raio * velocidade_orbital;
-		    corpos[i].vel[1] = corpos[i].pos[0] / raio * velocidade_orbital;
+
+		    corpos[i].vel[0] = -corpos[i].pos[1] / raio_xy * velocidade_orbital;
+			corpos[i].vel[1] = corpos[i].pos[0] / raio_xy * velocidade_orbital; // usar raio_xy aqui é importante para evitar que corpos com z grande tenham uma velocidade orbital muito alta, o que não faz sentido
 			corpos[i].vel[2] = 0;
         }
     }
+
 }
 // proximo passo: integrar a função de densidade e comparar com n*massa
 void densidadeMassa() {
@@ -296,7 +303,7 @@ void inicializarCorpos() {
 	LUT table_halo = loadTable("C:\\Users\\Enenon\\Documents\\GitHub\\Galaxy-Simulation\\gui\\data\\halo_table.txt");
 
     for (int i = 0; i < nBojo; i++) { // bojo
-        float raiocorpo = espacamento * inversa_bojo() / 200;
+        float raiocorpo = espacamento * inversa_bojo() / 10; // padrão: 200
 
         corpos[i].raioInicial = raiocorpo;
         float angulocorpo = rng() * 2 * M_PI;
@@ -374,7 +381,7 @@ void inicializarCorpos() {
 		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
         corpos[i].tipoCorpo = tipo::halo;
         //cores_corpos[i][0] = 0.8 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0;  cores_corpos[i][2] = 0.7;
-        corpos[i].cor[0] = 0.8; corpos[i].cor[1] = 0.6; corpos[i].cor[2] = 1;
+        corpos[i].cor[0] = 1; corpos[i].cor[1] = 0.8; corpos[i].cor[2] = 1;
 	}
     for (int i = n; i < n + numCorposTeste; i++) { // corpos de teste
         corpos[i].massa = 0;
@@ -387,6 +394,7 @@ void inicializarCorpos() {
         corpos[i].exist = true;
 		corpos[i].cor[0] = 1; corpos[i].cor[1] = 0; corpos[i].cor[2] = 0;
 		corpos[i].tipoCorpo = tipo::teste;
+		corpos[i].tamanho = 4;
     }
 #pragma omp parallel for
     for (int i = 0; i < n; i++) {
@@ -401,6 +409,7 @@ void inicializarCorpos() {
 
     atualizaForcaInicial(corpos);
     std::cout << "Aceleracao: " << corpos[0].acc[0] << corpos[0].acc[1] << std::endl;
+
     achaVelocidadeRadial(corpos);
 
 
@@ -470,7 +479,7 @@ void desenhag() {
 
     for (int i = 0; i < n; i++) {
         if (corpos[i].exist == true) {	
-            desenhaPonto(2, vec3(corpos[i].pos[0] * 80 / espacamento, corpos[i].pos[1] * 80 / espacamento, corpos[i].pos[2] * 80 / espacamento ), corpos[i].cor);
+            desenhaPonto(corpos[i].tamanho, vec3(corpos[i].pos[0] * escala_visual, corpos[i].pos[1] * escala_visual, corpos[i].pos[2] * escala_visual), corpos[i].cor);
 		}}
     #pragma omp parallel for
     for (int i = 0; i < n; i++) {

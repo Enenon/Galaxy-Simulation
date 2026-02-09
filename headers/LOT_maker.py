@@ -33,7 +33,7 @@ def mdisk(r):
 
 
 
-rd = 0.3
+rd = 0.5
 
 
 #r = np.logspace(np.log10(1e-6),np.log10(rmax),n)
@@ -70,7 +70,7 @@ plt.show()
 
 #%% Halo
 rmax_halo = 1
-rs = 0.3
+rs = 0.7
 
 p0 = achap0(mass_nfw,rmax_halo,rs)
 
