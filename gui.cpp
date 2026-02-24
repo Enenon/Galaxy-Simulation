@@ -25,7 +25,7 @@
 
 
 
-const float intervaloPlot = 2; // <--- minutos
+const float intervaloPlot = 5; // <--- minutos
 int numplots = 0;
 float num = 0.0;
 
@@ -142,7 +142,7 @@ static void plotar_corpos() {
     plt::figure_size(800, 800);
     //plt::scatter3(x, y, z, 1.0);
 	//plt::subplot(1, 1, 1);
-    plt::scatter(x, y, 1.0,{{"color","black"}});
+    plt::scatter(x, y, 0.7,{{"color","black"}});
     plt::xlabel("X (AL)");
     plt::ylabel("Y (AL)");
     //plt::set_zlabel("Z (AL)");
@@ -156,7 +156,6 @@ int main(void)
     const int largura = 800;
     const int altura = 600;
 	
-	densidadeMassa();
     inicializarCorpos();
 
     //return 0;
@@ -175,8 +174,8 @@ int main(void)
     glfwMakeContextCurrent(window);
 
 
-    //glClearColor(0.02, 0.02, 0.02, 1.0); // cor do fundo
-    glClearColor(1, 1, 1, 1.0);
+    glClearColor(0.02, 0.02, 0.02, 1.0); // cor do fundo
+    //glClearColor(1, 1, 1, 1.0);
 
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_BLEND);

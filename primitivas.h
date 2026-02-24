@@ -12,9 +12,9 @@ const float G = 1.76e-7 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e7*AL;
 const float kpc = 3.26e3 * AL; // 1 kpc em AL
 
-const int n = 3000;
+const int n = 20000;
 int nBojo = 0;
-int nHalo = n/2;
+int nHalo = n/3;
 int nDisco = n - nBojo - nHalo;
 
 const bool tem_corpo_teste = true;
@@ -27,7 +27,7 @@ const int numCorposTeste = tem_corpo_teste ? numDivisoes : 0;
 
 //int nHalo = n - nBojo - nDisco;
 const float massa_total_bar = 1.2e11;
-const float massa_total_halo = 6.2e11; // 5.7e11
+const float massa_total_halo = 6.2e11;
 
 const float massa = massa_total_bar / (nDisco+nBojo) * mSol;
 const float massa_halo = nHalo ? massa_total_halo / nHalo * mSol : 0; // se nHalo>0 massa_halo é calculada, caso contrário, é 0
@@ -45,7 +45,7 @@ const bool ignora_corpos_externos = true; // se false, a força de corpos de raio
 const bool tem_materia_escura = true;
 
 enum class tipo { bojo, disco, halo, teste };
-const float escala_visual = 50 / espacamento; // quantos AL cada unidade de distância representa na visualização
+const float escala_visual = 80 / espacamento; // quantos AL cada unidade de distância representa na visualização
 
 
 struct vec3 {
@@ -205,7 +205,7 @@ float Fgravitacional(corpo j, float r) {
         if (j.tipoCorpo == tipo::halo) {
             return 0;
         }
-	}
+	} //elimina a força aplicada pela materia escura, se não tiver
 	double r2 = r * r;
     float F = -G * m2 / (r2 + r_soft);
 
@@ -252,7 +252,7 @@ void atualizaForcaInicial(corpo(&corpos)[n+numCorposTeste]) {
                 vec3 v2(corpos[j].vel[0], corpos[j].vel[1], corpos[j].vel[2]);
                 double r = sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2) + pow(p1.z - p2.z, 2));
                 double a = Fgravitacional(corpos[j], r);
-                a1 = aceleracao(a, r, p1, p2); // cálculos mostraram que implementar direto na velocidade dá no mesmo q na aceleração
+                a1 = aceleracao(a, r, p1, p2);
                 corpos[i].acc[0] = corpos[i].acc[0] + a1.x; corpos[i].acc[1] = corpos[i].acc[1] + a1.y; corpos[i].acc[2] = corpos[i].acc[2] + a1.z;
             }
         }
@@ -279,13 +279,13 @@ void achaVelocidadeRadial(corpo(&corpos)[n+numCorposTeste]) {
         else {
 
 		    corpos[i].vel[0] = -corpos[i].pos[1] / raio_xy * velocidade_orbital;
-			corpos[i].vel[1] = corpos[i].pos[0] / raio_xy * velocidade_orbital; // usar raio_xy aqui é importante para evitar que corpos com z grande tenham uma velocidade orbital muito alta, o que não faz sentido
+			corpos[i].vel[1] = corpos[i].pos[0] / raio_xy * velocidade_orbital;
 			corpos[i].vel[2] = 0;
         }
     }
 
 }
-// proximo passo: integrar a função de densidade e comparar com n*massa
+
 void densidadeMassa() {
     double massa_total = integrated_pdf(dens_r_2, 0, espacamento, 100) * 2 * M_PI * mSol;
     std::cout << "Massa total integrada: " << massa_total << " massa total: " << mSol*n << std::endl;
@@ -294,11 +294,6 @@ void densidadeMassa() {
 
 using namespace std;
 void inicializarCorpos() {
-    float magnitudev = 2;
-    const double p0 = achap0(rd);
-	const double p0z = 1 / ((1 - (1 / exp(1))));
-	std::cout << "p0: " << p0 << std::endl;
-
     LUT table_disk = loadTable("C:\\Users\\Enenon\\Documents\\GitHub\\Galaxy-Simulation\\gui\\data\\disk_table.txt");
 	LUT table_halo = loadTable("C:\\Users\\Enenon\\Documents\\GitHub\\Galaxy-Simulation\\gui\\data\\halo_table.txt");
 
@@ -330,18 +325,21 @@ void inicializarCorpos() {
 
 		corpos[i].tipoCorpo = tipo::bojo;
         //cores_corpos[i][0] = 0.8 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 0.8 + sin(2 * angulocorpo) * 0.2;
-        corpos[i].cor[0] = 0.1; corpos[i].cor[1] = 0; corpos[i].cor[2] = 0.1;
+		corpos[i].cor[0] = 0.8; corpos[i].cor[1] = 0.8; corpos[i].cor[2] = 0.8;
+        //corpos[i].cor[0] = 0.1; corpos[i].cor[1] = 0; corpos[i].cor[2] = 0.1;
     }
 
     for (int i = nBojo; i < nBojo + nDisco; i++) { // disco
-
+        float magnitudev = 2;
+        const double p0 = achap0(rd);
+        const double p0z = 1 / ((1 - (1 / exp(1))));
         float prdn = rng();
 		float raiocorpo = sampleRadius(prdn, table_disk)*espacamento;
         //float raiocorpo = -espacamento * rd * (log(1 - rng()*rd / p0)); // inversa da CDF
         float posz = -espessura * (log(1 - rng() / p0z)); // inversa da CDF
         posz = 2 * (posz - espessura / 2);
         float angulocorpo = rng() * 2 * M_PI;
-        //floaGt posx = 2 * (rng() - 0.5) * espacamento; float posy = 2 * (rng() - 0.5) * espacamento; float raiocorpo = sqrt(posx * posx + posy * posy); float angulocorpo = atan2(posy, posx);
+   
         // Atribuição correta, elemento por elemento
         corpos[i].raioInicial = raiocorpo;
         corpos[i].pos[0] = raiocorpo * cos(angulocorpo); // rng() * espacamento_x - espacamento_x/2;
@@ -354,8 +352,9 @@ void inicializarCorpos() {
         corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
 
         corpos[i].tipoCorpo = tipo::disco;
-        //cores_corpos[i][0] = 0.75 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0.7;  cores_corpos[i][2] = 0.9 + sin(2 * angulocorpo) * 0.05 - 0.3 * raiocorpo / espacamento;
-        corpos[i].cor[0] = 0.2; corpos[i].cor[1] = 0; corpos[i].cor[2] = 0.3;
+        corpos[i].cor[0] = 0.8 + cos(2 * angulocorpo) * 0.1; corpos[i].cor[1] = 0.8;  corpos[i].cor[2] = 0.8 + sin(2 * angulocorpo) * 0.2;
+        //corpos[i].cor[0] = 0.8; corpos[i].cor[1] = 0.8; corpos[i].cor[2] = 0.8;
+        //corpos[i].cor[0] = 0.2; corpos[i].cor[1] = 0; corpos[i].cor[2] = 0.3;
 
     }
 	for (int i = nBojo + nDisco; i < n; i++) { // halo
@@ -380,7 +379,7 @@ void inicializarCorpos() {
         corpos[i].vel[2] = 0;
 		corpos[i].acc[0] = 0; corpos[i].acc[1] = 0; corpos[i].acc[2] = 0;
         corpos[i].tipoCorpo = tipo::halo;
-        //cores_corpos[i][0] = 0.8 + cos(2 * angulocorpo) * 0.1; cores_corpos[i][1] = 0;  cores_corpos[i][2] = 0.7;
+
         corpos[i].cor[0] = 1; corpos[i].cor[1] = 0.8; corpos[i].cor[2] = 1;
 	}
     for (int i = n; i < n + numCorposTeste; i++) { // corpos de teste
@@ -403,12 +402,9 @@ void inicializarCorpos() {
         corpos[i].exist = true;
         //cores_corpos[i][0] = 1; cores_corpos[i][1] = 0.8;  cores_corpos[i][2] = 1;
     }
-    for (int i = 0; i < n; i++) {
-        //cout << "Corpo " << i << " " << corpos[i].pos[0] << " " << corpos[i].vel[2] << endl;
-    }
+
 
     atualizaForcaInicial(corpos);
-    std::cout << "Aceleracao: " << corpos[0].acc[0] << corpos[0].acc[1] << std::endl;
 
     achaVelocidadeRadial(corpos);
 
@@ -458,27 +454,13 @@ void desenhag() {
                 }
 				corpos[i].acc[0] = corpos[i].acc[0] + a1.x; corpos[i].acc[1] = corpos[i].acc[1] + a1.y; corpos[i].acc[2] = corpos[i].acc[2] + a1.z;
 				
-                //v1 = velocidade(F, v1, p1, p2);
-                //v2 = velocidade(-F, m2, v2, p2, p1);
-                // atualizar posições
-                //p1.x = p1.x + v1.x*dt; p1.y = p1.y + v1.y*dt; p1.z = p1.z + v1.z*dt;
-                //corpos[i][1] = p1.x; corpos[i][2] = p1.y; corpos[i][3] = p1.z; <----- agora é feito um loop só para atualizar a posição dos corpos
-                //corpos[i][4] = v1.x; corpos[i][5] = v1.y; corpos[i][6] = v1.z;
-                //corpos[j][1] = p2.x; corpos[j][2] = p2.y; corpos[j][3] = p2.z;
-                
-                
-        }}
-        //glLoadIdentity();
-		//gluLookAt(0.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
-        
-        //for (int k = 0; k < 3; k++) {
-        //    momento[k] = momento[k] + corpos[i][0] * corpos[i][k + 4];
-        //}
+        }}
+
     }
 
     for (int i = 0; i < n; i++) {
-        if (corpos[i].exist == true) {	
+        if (corpos[i].exist == true && corpos[i].tipoCorpo != tipo::halo) {
             desenhaPonto(corpos[i].tamanho, vec3(corpos[i].pos[0] * escala_visual, corpos[i].pos[1] * escala_visual, corpos[i].pos[2] * escala_visual), corpos[i].cor);
 		}}
     #pragma omp parallel for
