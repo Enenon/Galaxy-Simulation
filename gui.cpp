@@ -27,7 +27,7 @@
 
 const float intervaloPlot = 5; // <--- minutos
 int numplots = 0;
-float num = 0.0;
+
 
 double pastTime = 0.0;
 

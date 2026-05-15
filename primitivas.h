@@ -12,7 +12,7 @@ const float G = 1.76e-7 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e7*AL;
 const float kpc = 3.26e3 * AL; // 1 kpc em AL
 
-const int n = 20000;
+const int n = 2000;
 int nBojo = 0;
 int nHalo = n/3;
 int nDisco = n - nBojo - nHalo;
@@ -40,6 +40,8 @@ float espessura = 3e3 * AL;
 float rd = 0.5;
 
 const float dt = 1e2 * milenio; // 1e2 * milenio é o ideal
+const bool usar_leapfrog = true; // se false, usa o método de Euler, que é menos preciso
+float num = 0.0; // a quantidade de iteracoes
 
 const bool ignora_corpos_externos = true; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
 const bool tem_materia_escura = true;
@@ -463,17 +465,36 @@ void desenhag() {
         if (corpos[i].exist == true && corpos[i].tipoCorpo != tipo::halo) {
             desenhaPonto(corpos[i].tamanho, vec3(corpos[i].pos[0] * escala_visual, corpos[i].pos[1] * escala_visual, corpos[i].pos[2] * escala_visual), corpos[i].cor);
 		}}
-    #pragma omp parallel for
-    for (int i = 0; i < n; i++) {
-        vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
-	    v1.x = v1.x + corpos[i].acc[0] * dt; v1.y = v1.y + corpos[i].acc[1] * dt; v1.z = v1.z + corpos[i].acc[2] * dt;
-        p1.x = p1.x + v1.x*dt; p1.y = p1.y + v1.y*dt; p1.z = p1.z + v1.z*dt;
-        corpos[i].vel[0] = v1.x; corpos[i].vel[1] = v1.y; corpos[i].vel[2] = v1.z;
+    if (usar_leapfrog == false) {
+        #pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
+            v1.x = v1.x + corpos[i].acc[0] * dt; v1.y = v1.y + corpos[i].acc[1] * dt; v1.z = v1.z + corpos[i].acc[2] * dt;
+            p1.x = p1.x + v1.x * dt; p1.y = p1.y + v1.y * dt; p1.z = p1.z + v1.z * dt;
+            corpos[i].vel[0] = v1.x; corpos[i].vel[1] = v1.y; corpos[i].vel[2] = v1.z;
 
-        if (corpos[i].tipoCorpo != tipo::halo && corpos[i].tipoCorpo != tipo::teste) {
-            corpos[i].pos[0] = p1.x; corpos[i].pos[1] = p1.y; corpos[i].pos[2] = p1.z;
+            if (corpos[i].tipoCorpo != tipo::halo && corpos[i].tipoCorpo != tipo::teste) {
+                corpos[i].pos[0] = p1.x; corpos[i].pos[1] = p1.y; corpos[i].pos[2] = p1.z;
+            }
         }
     }
+    else {
+        #pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
+            if (num == 0) {
+                v1.x = v1.x + corpos[i].acc[0] * dt/2; v1.y = v1.y + corpos[i].acc[1] * dt/2; v1.z = v1.z + corpos[i].acc[2] * dt/2;
+            }
+            else {
+                p1.x = p1.x + v1.x * dt; p1.y = p1.y + v1.y * dt; p1.z = p1.z + v1.z * dt;
+                v1.x = v1.x + corpos[i].acc[0] * dt; v1.y = v1.y + corpos[i].acc[1] * dt; v1.z = v1.z + corpos[i].acc[2] * dt;
+            }
+            corpos[i].vel[0] = v1.x; corpos[i].vel[1] = v1.y; corpos[i].vel[2] = v1.z;
+            if (corpos[i].tipoCorpo != tipo::halo && corpos[i].tipoCorpo != tipo::teste) {
+                corpos[i].pos[0] = p1.x; corpos[i].pos[1] = p1.y; corpos[i].pos[2] = p1.z;
+            }
+        }
+	}
     for (int i = n; i < n + numCorposTeste; i++) { // apenas as partículas de teste
         float raio = corpos[i].raioInicial;
         float aceleracao_radial = sqrt(corpos[i].acc[0] * corpos[i].acc[0] + corpos[i].acc[1] * corpos[i].acc[1]);
