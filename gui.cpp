@@ -25,7 +25,7 @@
 
 
 
-const float intervaloPlot = 5; // <--- minutos
+const float intervaloPlot = 15; // <--- minutos
 int numplots = 0;
 
 
@@ -139,15 +139,16 @@ static void plotar_corpos() {
         y.push_back(corpos[i].pos[1]);
         z.push_back(corpos[i].pos[2]);
     }
-    plt::figure_size(800, 800);
+    plt::figure_size(1200, 1200);
     //plt::scatter3(x, y, z, 1.0);
 	//plt::subplot(1, 1, 1);
-    plt::scatter(x, y, 0.7,{{"color","black"}});
+	plt::plot(x, y, { {"label", "Corpos"}, {"color", "black"}, {"linestyle", ""}, {"marker", "."}, {"markersize", "2"} });
+	//plt::scatter(x, y, 0.7,{{"color","black"}}); // pq o scatter não funciona? tive que usar um plot padrão
     plt::xlabel("X (AL)");
     plt::ylabel("Y (AL)");
     //plt::set_zlabel("Z (AL)");
-	plt::xlim(-espacamento * 1.5, espacamento * 1.5);
-	plt::ylim(-espacamento * 1.5, espacamento * 1.5);
+	plt::xlim(-espacamento * 1.1, espacamento * 1.1);
+	plt::ylim(-espacamento * 1.1, espacamento * 1.1);
 }
 
 
@@ -191,9 +192,10 @@ int main(void)
             plotar();
             plt::title("Velocidade x Raio apos " + std::to_string(num * dt) + " milenios");
             plt::save("plots/" + std::to_string(numplots));
+            plt::clf();
             plotar_corpos();
             plt::title("Distribuição dos corpos apos " + std::to_string(num * dt) + " milenios");
-            plt::save("plots/dist_" + std::to_string(numplots) + ".png");
+            plt::save("plots/dist_" + std::to_string(numplots) + ".pdf");
             numplots++;
 			cout << "Plot salvo como plots/" << numplots - 1 << ".png" << endl;
         }

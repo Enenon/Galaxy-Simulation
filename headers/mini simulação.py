@@ -7,7 +7,7 @@ from scipy.signal import savgol_filter
 def rng(): return random()-0.5
 
 obj = 1 # 0 = plotar trajetorias, 1 plotar leapfrog vs euler, 2 = energia para diferentes passos de tempo, 3 = plotar trajetorias leapfrog vs euler
-n = 5
+n = 3
 random_seed = 42
 seed(random_seed)
 
@@ -23,10 +23,10 @@ rdis = 1
 
 for i in range(n):
     corpos[i] = [rng()*5,rng()*rdis,rng()*rdis,rng()*rdis, rng()*0.1,rng()*0.1,rng()*0.1, 0,0,0]'''
-raioorbita = 1500
-r_min2 = 10
-t = 1000000
-h = 100
+raioorbita = 100
+r_min2 = 0
+t = 20000
+h = 1
 G = 0.4e-4
 def calcula_orbita(corpoi, corpoj, raioorbita=raioorbita):
     theta = random()*2*np.pi
@@ -34,21 +34,21 @@ def calcula_orbita(corpoi, corpoj, raioorbita=raioorbita):
     r_xy = raioorbita * np.sqrt(1.0 - znorm * znorm)
     if (r_xy != r_xy): # verifica se é NaN
         r_xy = 0
+    corpo = corpoi.copy()
+    corpo[1] = np.cos(theta) * r_xy + corpoj[1]
+    corpo[2] = np.sin(theta) * r_xy + corpoj[2]
+    corpo[3] = znorm * raioorbita + corpoj[3]
 
-    corpoi[1] = np.cos(theta) * r_xy + corpoj[1]
-    corpoi[2] = np.sin(theta) * r_xy + corpoj[2]
-    corpoi[3] = znorm * raioorbita + corpoj[3]
 
-
-    r2 = (corpoi[1])**2+(corpoi[2])**2+(corpoi[3])**2
+    r2 = (corpo[1])**2+(corpo[2])**2+(corpo[3])**2
     r = np.sqrt(r2)
     a = -G*corpoj[0]/(r2)
     velocidade = np.sqrt(-a*r)
-    corpoi[4] = -velocidade * np.sin(theta) + corpoj[4]
-    corpoi[5] = velocidade * np.cos(theta) + corpoj[5]
-    corpoi[6] = 0
+    corpo[4] = -velocidade * np.sin(theta) + corpoj[4]
+    corpo[5] = velocidade * np.cos(theta) + corpoj[5]
+    corpo[6] = 0
 
-    return corpoi
+    return corpo
 
 corpos[1] = calcula_orbita(corpos[1], corpos[0])
 corpos[2] = calcula_orbita(corpos[2], corpos[1],raioorbita=10)
@@ -92,20 +92,18 @@ class Sistema:
 
             for i, ci in enumerate(self.corpos):
                 if leapfrog:
-                    for xi in range(1,4):
-                        if tl == 0:
-                            self.corpos[i][xi+3] += h*self.corpos[i][xi+6]*0.5
-                        else:
-                            self.corpos[i][xi+3] += h*self.corpos[i][xi+6]
-                            self.corpos[i][xi] += h*self.corpos[i][xi+3]
+                    if tl == 0:
+                        self.corpos[i][4:7] += h*self.corpos[i][7:10]*0.5
+                        self.corpos[i][1:4] += h*self.corpos[i][4:7]
+                    else:
+                        self.corpos[i][4:7] += h*self.corpos[i][7:10]
+                        self.corpos[i][1:4] += h*self.corpos[i][4:7]
 
-                        self.posis[i,int(round(tl/h,0)),xi-1] = self.corpos[i][xi]
                 else:
-                    for xi in range(1,4):
-                        self.corpos[i][xi+3] += h*self.corpos[i][xi+6]
-                        self.corpos[i][xi] += h*self.corpos[i][xi+3]
-
-                        self.posis[i,int(round(tl/h,0)),xi-1] = self.corpos[i][xi]
+                    self.corpos[i][4:7] += h*self.corpos[i][7:10]
+                    self.corpos[i][1:4] += h*self.corpos[i][4:7]
+                for xi in range(1,4):
+                    self.posis[i,int(round(tl/h,0)),xi-1] = self.corpos[i][xi]
 
 sistema = Sistema(corpos)
 import scienceplots
@@ -123,7 +121,7 @@ if obj == 0: # se eu quiser plotar as trajetórias
         # Opcional: adiciona texto com o número da partícula próximo ao ponto final
         #ax.text(sistema.posis[i,-1,0], sistema.posis[i,-1,1], sistema.posis[i,-1,2], f'  P{i}', fontsize=10)
 
-    ax.legend()
+    #ax.legend()
     plt.show()
 
     plt.ylabel('Energias')

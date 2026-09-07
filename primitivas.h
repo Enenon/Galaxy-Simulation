@@ -12,12 +12,12 @@ const float G = 1.76e-7 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e7*AL;
 const float kpc = 3.26e3 * AL; // 1 kpc em AL
 
-const int n = 2000;
-int nBojo = 0;
+const int n = 20000;
+int nBojo = n/5;
 int nHalo = n/3;
 int nDisco = n - nBojo - nHalo;
 
-const bool tem_corpo_teste = true;
+const bool tem_corpo_teste = false;
 const int numDivisoes = 100;
 
 const float raioMaximoPlot = 4; // até quantos raios eu quero plotar
@@ -26,21 +26,21 @@ const float raioMaximoPlot = 4; // até quantos raios eu quero plotar
 const int numCorposTeste = tem_corpo_teste ? numDivisoes : 0;
 
 //int nHalo = n - nBojo - nDisco;
-const float massa_total_bar = 1.2e11;
-const float massa_total_halo = 6.2e11;
+const float massa_total_bar = 2e11;
+const float massa_total_halo = 18e11;
 
 const float massa = massa_total_bar / (nDisco+nBojo) * mSol;
 const float massa_halo = nHalo ? massa_total_halo / nHalo * mSol : 0; // se nHalo>0 massa_halo é calculada, caso contrário, é 0
 //const float massa_halo = massa_total_halo / nHalo * mSol;
 
 float cores_corpos[n][3];
-float espacamento = 15 * kpc; // tamanho do disco
-float raiomax_halo = 50 * kpc;
+float espacamento = 23 * kpc; // tamanho do disco
+float raiomax_halo = 80 * kpc;
 float espessura = 3e3 * AL;
 float rd = 0.5;
 
 const float dt = 1e2 * milenio; // 1e2 * milenio é o ideal
-const bool usar_leapfrog = true; // se false, usa o método de Euler, que é menos preciso
+const bool usar_leapfrog = false; // se false, usa o método de Euler, que é menos preciso
 float num = 0.0; // a quantidade de iteracoes
 
 const bool ignora_corpos_externos = true; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
@@ -483,11 +483,12 @@ void desenhag() {
         for (int i = 0; i < n; i++) {
             vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
             if (num == 0) {
-                v1.x = v1.x + corpos[i].acc[0] * dt/2; v1.y = v1.y + corpos[i].acc[1] * dt/2; v1.z = v1.z + corpos[i].acc[2] * dt/2;
+				v1.x = v1.x + corpos[i].acc[0] * dt / 2; v1.y = v1.y + corpos[i].acc[1] * dt / 2; v1.z = v1.z + corpos[i].acc[2] * dt / 2; // meio passo inicial
+				p1.x = p1.x + v1.x * dt; p1.y = p1.y + v1.y * dt; p1.z = p1.z + v1.z * dt; // posição dá 1 passo inicial
             }
             else {
-                p1.x = p1.x + v1.x * dt; p1.y = p1.y + v1.y * dt; p1.z = p1.z + v1.z * dt;
                 v1.x = v1.x + corpos[i].acc[0] * dt; v1.y = v1.y + corpos[i].acc[1] * dt; v1.z = v1.z + corpos[i].acc[2] * dt;
+                p1.x = p1.x + v1.x * dt; p1.y = p1.y + v1.y * dt; p1.z = p1.z + v1.z * dt;
             }
             corpos[i].vel[0] = v1.x; corpos[i].vel[1] = v1.y; corpos[i].vel[2] = v1.z;
             if (corpos[i].tipoCorpo != tipo::halo && corpos[i].tipoCorpo != tipo::teste) {
