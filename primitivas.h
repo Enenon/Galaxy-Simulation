@@ -12,9 +12,9 @@ const float G = 1.76e-7 * AL * AL * AL / mSol / (milenio * milenio);
 const float r_soft = 5e7*AL;
 const float kpc = 3.26e3 * AL; // 1 kpc em AL
 
-const int n = 20000;
+const int n = 1000;
 int nBojo = n/5;
-int nHalo = n/3;
+int nHalo = 0*n/3;
 int nDisco = n - nBojo - nHalo;
 
 const bool tem_corpo_teste = false;
@@ -41,7 +41,9 @@ float rd = 0.5;
 
 const float dt = 1e2 * milenio; // 1e2 * milenio é o ideal
 const bool usar_leapfrog = false; // se false, usa o método de Euler, que é menos preciso
-float num = 0.0; // a quantidade de iteracoes
+
+const bool calcular_energias = true; // se true, calcula a energia cinética e potencial do sistema a cada iteração
+std::vector<double> energias_cineticas; std::vector<double> energias_potenciais; std::vector<double> energias_totais; std::vector<double> tempos;
 
 const bool ignora_corpos_externos = true; // se false, a força de corpos de raio maior que o corpo é considerada na velocidade inicial
 const bool tem_materia_escura = true;
@@ -49,6 +51,7 @@ const bool tem_materia_escura = true;
 enum class tipo { bojo, disco, halo, teste };
 const float escala_visual = 80 / espacamento; // quantos AL cada unidade de distância representa na visualização
 
+float num = 0.0; // a quantidade de iteracoes
 
 struct vec3 {
     float x, y, z;
@@ -288,6 +291,8 @@ void achaVelocidadeRadial(corpo(&corpos)[n+numCorposTeste]) {
 
 }
 
+
+
 void densidadeMassa() {
     double massa_total = integrated_pdf(dens_r_2, 0, espacamento, 100) * 2 * M_PI * mSol;
     std::cout << "Massa total integrada: " << massa_total << " massa total: " << mSol*n << std::endl;
@@ -427,11 +432,12 @@ bool leap = 0;
 bool primeiro = false;
 
 void desenhag() {
-	
 	using namespace std;
     float m1, m2;
     m1 = 1; m2 = 0.7;
     float momento[3] = { 0,0,0 };
+	energias_cineticas.push_back(0); energias_potenciais.push_back(0); energias_totais.push_back(0); tempos.push_back(num * dt);
+
     #pragma omp parallel for
     for (int i = 0;i < n+numCorposTeste;i++) { // i é o que sofre a força
         if (corpos[i].tipoCorpo == tipo::halo) {
@@ -460,11 +466,28 @@ void desenhag() {
         }}
 
     }
+    if (calcular_energias) {
+        //#pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            vec3 v1(corpos[i].vel[0], corpos[i].vel[1], corpos[i].vel[2]);
+            energias_cineticas.back() += 0.5 * corpos[i].massa * (v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
+            for (int j = 0; j < n; j++) {
+                if (i != j && corpos[i].exist == true && corpos[j].exist == true) {
+                    vec3 p1(corpos[i].pos[0], corpos[i].pos[1], corpos[i].pos[2]); vec3 p2(corpos[j].pos[0], corpos[j].pos[1], corpos[j].pos[2]);
+                    double r = sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2) + pow(p1.z - p2.z, 2));
+                    energias_potenciais.back() += -G * 0.5 * corpos[i].massa * corpos[j].massa / r;
+                }
+            }
+        }
+        energias_totais.back() = energias_cineticas.back() + energias_potenciais.back();
+	}
 
+    // desenha as particulas
     for (int i = 0; i < n; i++) {
         if (corpos[i].exist == true && corpos[i].tipoCorpo != tipo::halo) {
             desenhaPonto(corpos[i].tamanho, vec3(corpos[i].pos[0] * escala_visual, corpos[i].pos[1] * escala_visual, corpos[i].pos[2] * escala_visual), corpos[i].cor);
 		}}
+	// integrações de posição e velocidade
     if (usar_leapfrog == false) {
         #pragma omp parallel for
         for (int i = 0; i < n; i++) {

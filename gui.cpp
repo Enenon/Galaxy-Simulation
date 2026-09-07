@@ -151,6 +151,20 @@ static void plotar_corpos() {
 	plt::ylim(-espacamento * 1.1, espacamento * 1.1);
 }
 
+static void plotar_energias() {
+    plt::clf();
+    std::cout << "Plotando energias..." << std::endl;
+    plt::figure_size(800, 600);
+    plt::plot(tempos, energias_cineticas, { {"label", "Energia Cinética"} });
+    plt::plot(tempos, energias_potenciais, { {"label", "Energia Potencial"} });
+    plt::plot(tempos, energias_totais, { {"label", "Energia Total"} });
+    plt::xlabel("Tempo (milenios)");
+    plt::ylabel("Energia");
+    plt::legend();
+    plt::grid(true);
+    plt::title("Energias do Sistema");
+    plt::save("plots/energias.png");
+}
 
 int main(void)
 {
@@ -249,6 +263,7 @@ int main(void)
 	plt::title("Velocidade x Raio");
 	plt::save("velxraio.png"); 
 	std::cout << "Grafico salvo como velxraio.png" << std::endl;
+	plotar_energias();
     glfwTerminate();
     return 0;
 }
